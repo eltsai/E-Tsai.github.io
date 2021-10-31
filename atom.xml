@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Hexo</title>
+  <icon>https://github.com/eltsai/E-Tsai.github.io/icon.png</icon>
+  
+  <link href="https://github.com/eltsai/E-Tsai.github.io/atom.xml" rel="self"/>
+  
+  <link href="https://github.com/eltsai/E-Tsai.github.io/"/>
+  <updated>2021-10-30T15:38:41.340Z</updated>
+  <id>https://github.com/eltsai/E-Tsai.github.io/</id>
+  
+  <author>
+    <name>Elisa Tsai</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>蚂蚁</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2020-03-16T21:02:13.000Z</published>
+    <updated>2021-10-30T15:38:41.340Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN%2FEN-green&quot;&gt;&lt;/p&gt;
+&lt;p&gt;故事发生在一个阳光明媚的下午 ，我坐在某个地方看书。就在我快睡着的时候 ，一个声音传来：“打扰了，这是做什么的？”&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Apricity" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/Apricity/"/>
+    
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="EN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/EN/"/>
+    
+    <category term="translated" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/translated/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>妇女节快乐</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2020-03-10T03:31:46.000Z</published>
+    <updated>2021-10-30T15:38:41.288Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN-orange&quot;&gt;&lt;/p&gt;
+&lt;p&gt;此漫画改编自邓艾艾艾两年前的一条微博，当读到这篇文章时，感动之余我感到极大的表达欲和创作欲，脑海中出现一幅幅画面，很想以图画的形式将它转述出来。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Apricity" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/Apricity/"/>
+    
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="comics" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/comics/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>原创歌曲 Originals</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2020-01-01T03:57:32.000Z</published>
+    <updated>2021-10-30T15:38:41.340Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN%2FEN-green&quot;&gt;&lt;/p&gt;
+&lt;p&gt;一些原创。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Apricity" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/Apricity/"/>
+    
+    
+    <category term="songs" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/songs/"/>
+    
+    <category term="music" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/music/"/>
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="EN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/EN/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>日文翻唱</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2019-12-20T17:56:00.000Z</published>
+    <updated>2021-10-30T15:38:41.232Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-JP-informational&quot;&gt;&lt;/p&gt;
+&lt;p&gt;一些日文翻唱。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Apricity" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/Apricity/"/>
+    
+    
+    <category term="songs" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/songs/"/>
+    
+    <category term="music" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/music/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Spectres And Meltdown</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2019-11-21T18:17:58.000Z</published>
+    <updated>2021-10-30T15:38:41.340Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN-orange&quot;&gt;&lt;/p&gt;
+&lt;p&gt;从流水线 (pipeline) 到乱序执行 (out-of-order)，处理器的指令级并行保证了其性能上的绝大提升。但是在性能提升的同时，安全性的问题也随之出现。这篇博客主要介绍预测执行攻击。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="CS" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/CS/"/>
+    
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="systems" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/systems/"/>
+    
+    <category term="security" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/security/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>English Covers</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2019-11-03T02:58:00.000Z</published>
+    <updated>2021-10-30T15:38:41.232Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN%2FEN-green&quot;&gt;&lt;/p&gt;
+&lt;p&gt;一些英文翻唱 Some English covers.&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Apricity" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/Apricity/"/>
+    
+    
+    <category term="songs" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/songs/"/>
+    
+    <category term="music" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/music/"/>
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="EN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/EN/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Source Code Found Online</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2019-09-24T21:16:16.000Z</published>
+    <updated>2021-10-30T15:38:41.340Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-EN-blue&quot;&gt;&lt;/p&gt;
+&lt;p&gt;An alignment chart of source code found online. &lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Apricity" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/Apricity/"/>
+    
+    
+    <category term="EN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/EN/"/>
+    
+    <category term="comics" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/comics/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Linux中的fork()是怎么实现的</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2019-09-22T06:02:07.000Z</published>
+    <updated>2021-10-30T15:38:41.284Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN-orange&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Fork和它的变体是Unix系统创建进程 (process) 的方法，在这篇文章里我们会探索它是如何实现的。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="CS" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/CS/"/>
+    
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="systems" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/systems/"/>
+    
+    <category term="technics" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/technics/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Hakuna Matata</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2019-09-13T03:33:32.000Z</published>
+    <updated>2021-10-30T18:59:03.425Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-EN-blue&quot;&gt;&lt;/p&gt;
+&lt;p&gt;I come back to watch these videos every time I feel uneasy, anxious or upset about certain trivial life events…&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Memo" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/Memo/"/>
+    
+    
+    <category term="EN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/EN/"/>
+    
+    <category term="diary" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/diary/"/>
+    
+    <category term="links" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/links/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Total Perspective Vortex</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2019-09-05T23:33:57.000Z</published>
+    <updated>2021-10-30T15:38:41.232Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-EN-blue&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Adapted from sci-fi: Restaurant at the End of the Universe, chapter 10 and chapter 11.&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Apricity" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/Apricity/"/>
+    
+    
+    <category term="EN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/EN/"/>
+    
+    <category term="comics" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/comics/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>你的第一个Linux内核补丁</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2019-04-18T14:17:15.000Z</published>
+    <updated>2021-10-30T15:38:41.340Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN-orange&quot;&gt;&lt;/p&gt;
+&lt;p&gt;这是一个linux内核补丁提交教程，其中有不少内容来自&lt;a href=&quot;https://kernelnewbies.org/&quot;&gt;Kernel Newbies&lt;/a&gt;，也有部分自己创作的。&lt;br&gt;书籍推荐: &lt;a href=&quot;https://lwn.net/Kernel/LDD3/&quot;&gt;Linux Device Drivers&lt;/a&gt;&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="CS" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/CS/"/>
+    
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="systems" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/systems/"/>
+    
+    <category term="technics" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/technics/"/>
+    
+    <category term="translated" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/translated/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Linux内核补丁的哲学</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2019-03-11T14:38:22.000Z</published>
+    <updated>2021-10-30T15:38:41.340Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN-orange&quot;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://kernelnewbies.org/PatchPhilosophy&quot;&gt;英文原文&lt;/a&gt;&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="CS" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/CS/"/>
+    
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="systems" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/systems/"/>
+    
+    <category term="technics" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/technics/"/>
+    
+    <category term="translated" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/translated/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Total Perspective Vortex (绝对透视漩涡)</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2018-10-21T03:48:12.000Z</published>
+    <updated>2021-10-30T15:38:41.260Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN-orange&quot;&gt;&lt;/p&gt;
+&lt;p&gt;这个小短漫改编自科幻小说《宇宙尽头的餐馆》第十章和第十一章。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Apricity" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/Apricity/"/>
+    
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="comics" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/comics/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Hi There</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2018-10-21T03:29:39.000Z</published>
+    <updated>2021-10-30T15:38:41.284Z</updated>
+    
+    
+    <summary type="html">&lt;p float=&quot;left&quot;&gt;
+  &lt;img src=&quot;https://img.shields.io/badge/Lan-CN%2FEN-green&quot; /&gt; 
+    &lt;img src=&quot;https://img.shields.io/badge/opinions-my%20own-9cf&quot; /&gt;
+  &lt;img src=&quot;https://img.shields.io/badge/license-by--nc--sa%204.0-ffb9b4&quot; /&gt;
+&lt;/p&gt;
+
+&lt;h1 id=&quot;Hi-There&quot;&gt;&lt;a href=&quot;#Hi-There&quot; class=&quot;headerlink&quot; title=&quot;Hi There&quot;&gt;&lt;/a&gt;Hi There&lt;/h1&gt;&lt;p&gt;Welcome welcome! &lt;/p&gt;
+&lt;p&gt;你好哇，我是Elisa，这是我的个人博客，我在这里主要使用中文写作。&lt;/p&gt;
+&lt;h1 id=&quot;Articles&quot;&gt;&lt;a href=&quot;#Articles&quot; class=&quot;headerlink&quot; title=&quot;Articles&quot;&gt;&lt;/a&gt;Articles&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;技术: &lt;a href=&quot;http://etsai.site/categories/CS/&quot;&gt;Computer Science&lt;/a&gt; &lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;漫画: &lt;a href=&quot;http://etsai.site/tags/comics/&quot;&gt;Comics&lt;/a&gt;: &lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&quot;https://etsai.site/Total-Perspective-Vortex-EN/&quot;&gt;Total Perspective Vortex (绝对透视漩涡)&lt;/a&gt; (&lt;a href=&quot;https://etsai.site/Total-Perspective-Vortex/&quot;&gt;Chinese version&lt;/a&gt;), &lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&quot;https://etsai.site/international-woman-s-day/&quot;&gt;Happy International Woman’s Day (妇女节快乐)&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;漫画备份：telegram channel: &lt;a href=&quot;https://t.me/elisacomics&quot;&gt;@elisacomics&lt;/a&gt; &lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;绘画/歌曲: &lt;a href=&quot;http://etsai.site/categories/Apricity/&quot;&gt;Songs and Paintings&lt;/a&gt;:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https://etsai.site/Chinese-covers&quot;&gt;Chinese Covers&lt;/a&gt; &lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://etsai.site/English-covers&quot;&gt;English Covers&lt;/a&gt; &lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://etsai.site/Japanese-covers&quot;&gt;Japanese Covers&lt;/a&gt; &lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://etsai.site/original-songs&quot;&gt;Original Songs&lt;/a&gt; &lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;随笔: &lt;a href=&quot;http://etsai.site/categories/Memo/&quot;&gt;Memo&lt;/a&gt; &lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;p&gt;收藏/松鼠症: &lt;a href=&quot;http://etsai.site/tags/entry-stamp/&quot;&gt;Entry Stamp&lt;/a&gt; &lt;/p&gt;
+&lt;p&gt;科技爱好者周刊：telegram channel: &lt;a href=&quot;https://t.me/scitech_fans&quot;&gt;@科技爱好者周刊&lt;/a&gt; &lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;All the content in this blog is under a &lt;a rel=&quot;license&quot; href=&quot;http://creativecommons.org/licenses/by-nc-sa/4.0/&quot;&gt;Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License&lt;/a&gt;, whatever it means.&lt;br&gt;&lt;br /&gt;&lt;br&gt;&lt;a rel=&quot;license&quot; href=&quot;http://creativecommons.org/licenses/by-nc-sa/4.0/&quot;&gt;&lt;img alt=&quot;Creative Commons License&quot; style=&quot;border-width:0&quot; src=&quot;https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png&quot; /&gt;&lt;/a&gt;&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Apricity" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/Apricity/"/>
+    
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="diary" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/diary/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>音频格式：MP3, WAV的对比与实现</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2018-07-20T01:48:45.000Z</published>
+    <updated>2021-10-30T15:38:41.340Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN-orange&quot;&gt;&lt;/p&gt;
+&lt;p&gt;音频文件格式相关。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="CS" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/CS/"/>
+    
+    
+    <category term="music" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/music/"/>
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="technics" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/technics/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>在一个不确定的世界里</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2018-07-09T03:10:38.000Z</published>
+    <updated>2021-10-30T15:38:41.284Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN-orange&quot;&gt;&lt;/p&gt;
+&lt;p&gt;Only entropy comes easy.&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Memo" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/Memo/"/>
+    
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="diary" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/diary/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>有趣的网站/频道</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2018-06-26T21:55:19.000Z</published>
+    <updated>2021-10-30T18:59:23.797Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN-orange&quot;&gt;&lt;/p&gt;
+&lt;p&gt;有趣的网站：入境戳集合。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Memo" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/Memo/"/>
+    
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="links" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/links/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>中文翻唱</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2018-06-26T20:47:02.000Z</published>
+    <updated>2021-10-30T15:38:41.232Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN-orange&quot;&gt;&lt;/p&gt;
+&lt;p&gt;一些中文翻唱。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="Apricity" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/Apricity/"/>
+    
+    
+    <category term="songs" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/songs/"/>
+    
+    <category term="music" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/music/"/>
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="EN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/EN/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>λ演算</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2018-02-28T19:24:58.000Z</published>
+    <updated>2021-10-30T15:38:41.340Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN-orange&quot;&gt;&lt;/p&gt;
+&lt;p&gt;关于&lt;a href=&quot;https://zh.wikipedia.org/zh-sg/%CE%9B%E6%BC%94%E7%AE%97&quot;&gt;λ演算&lt;/a&gt;的一些学习笔记。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://link.zhihu.com/?target=http://cgnail.github.io/academic/lambda-1/&quot;&gt;我的最爱Lambda演算——开篇 · cgnail’s weblog&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://link.zhihu.com/?target=http://cgnail.github.io/academic/lambda-2/&quot;&gt;阿隆佐.丘奇的天才之作——lambda演算中的数字 · cgnail’s weblog&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://link.zhihu.com/?target=http://cgnail.github.io/academic/lambda-3/&quot;&gt;Lambda演算中的布尔值和选择 · cgnail’s weblog&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://link.zhihu.com/?target=http://cgnail.github.io/academic/lambda-4/&quot;&gt;为什么是Y？ · cgnail’s weblog&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://link.zhihu.com/?target=http://cgnail.github.io/academic/lambda-5/&quot;&gt;从Lambda演算到组合子演算 · cgnail’s weblog&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://link.zhihu.com/?target=http://cgnail.github.io/academic/lambda-6/&quot;&gt;Lambda演算的类型 · cgnail’s weblog&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://link.zhihu.com/?target=http://cgnail.github.io/academic/lambda-7/&quot;&gt;终章，Lambda演算建模——程序即证明！ · cgnail’s weblog&lt;/a&gt;&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="CS" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/CS/"/>
+    
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="programming-language" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/programming-language/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>从启动盘开始写一个简易操作系统</title>
+    <link href="https://github.com/eltsai/E-Tsai.github.io/title/"/>
+    <id>https://github.com/eltsai/E-Tsai.github.io/title/</id>
+    <published>2017-07-09T23:02:08.000Z</published>
+    <updated>2021-10-30T15:38:41.280Z</updated>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;https://img.shields.io/badge/Lan-CN-orange&quot;&gt;&lt;/p&gt;
+&lt;h2 id=&quot;前言-amp-工具&quot;&gt;&lt;a href=&quot;#前言-amp-工具&quot; class=&quot;headerlink&quot; title=&quot;前言&amp;amp;工具&quot;&gt;&lt;/a&gt;前言&amp;amp;工具&lt;/h2&gt;&lt;p&gt;&amp;emsp; 我使用的是AT&amp;amp;T语法汇编，使用GCC编译，在qemu上跑这个简易的操作系统。GCC要求汇编代码是AT&amp;amp;T格式的，如果使用你想使用NASM编译的话，则可以使用intel语法。ld是GNU汇编器的链接器，GNU汇编器使用 AT&amp;amp;T 样式的语法。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="CS" scheme="https://github.com/eltsai/E-Tsai.github.io/categories/CS/"/>
+    
+    
+    <category term="CN" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/CN/"/>
+    
+    <category term="systems" scheme="https://github.com/eltsai/E-Tsai.github.io/tags/systems/"/>
+    
+  </entry>
+  
+</feed>
