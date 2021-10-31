@@ -35,9 +35,9 @@
 <meta property="og:image" content="https://softwarerajivprab.files.wordpress.com/2019/07/cache.png">
 <meta property="og:image" content="https://miro.medium.com/max/751/1*xPqqyrbiNO7yrAsu9_VxWw.png">
 <meta property="og:image" content="https://miro.medium.com/max/3601/1*ESJwtRksgWYNWL95sW9mPw.png">
-<meta property="og:image" content="https://eltsai.github.io/2019/11/21/spectres-and-meltdown/Spectres.jpg">
+<meta property="og:image" content="https://etsai.site/spectres-and-meltdown/Spectres.jpg">
 <meta property="article:published_time" content="2019-11-21T18:17:58.000Z">
-<meta property="article:modified_time" content="2021-10-30T15:38:41.340Z">
+<meta property="article:modified_time" content="2021-10-31T15:35:14.243Z">
 <meta property="article:author" content="Elisa Tsai">
 <meta property="article:tag" content="CN">
 <meta property="article:tag" content="systems">
@@ -195,7 +195,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-10-30 11:38:41" itemprop="dateModified" datetime="2021-10-30T11:38:41-04:00">2021-10-30</time>
+                <time title="Modified: 2021-10-31 11:35:14" itemprop="dateModified" datetime="2021-10-31T11:35:14-04:00">2021-10-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -294,8 +294,7 @@
  <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cat /sys/devices/system/cpu/vulnerabilities/meltdown </span><br><span class="line">Mitigation: PTI</span><br></pre></td></tr></table></figure>
 
 <h2 id="幽灵"><a href="#幽灵" class="headerlink" title="幽灵"></a>幽灵</h2><p>幽灵 (spectre) 得以存在的根本原因是预测执行 (speculation execution)，比起熔断，它跟不容易被攻击者利用，然而，它的防治并没有Meltdown那么简单。</p>
-<h3 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h3><img src="/2019/11/21/spectres-and-meltdown/Spectres.jpg" class="">
-
+<h3 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h3><p><img src="https://etsai.site/spectres-and-meltdown/Spectres.jpg"></p>
 <p>我们把Spectre根据access phase分成四类，其中的Spectre v3就是刚刚讨论过的meltdown，接下来我们将展示Spectre v1的伪代码，并演示v1和v4的几种变种 (variant).</p>
 <h3 id="Spectre-v1-伪码"><a href="#Spectre-v1-伪码" class="headerlink" title="Spectre v1 伪码"></a>Spectre v1 伪码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// assume probe_array is flushed from cache</span></span><br><span class="line"><span class="keyword">if</span> (some_condition)&#123;</span><br><span class="line">    secret_byte = *secret_addr;				<span class="comment">// 指令1</span></span><br><span class="line">    tmp = probe_array[secret_byte * <span class="number">512</span>];	<span class="comment">//指令2</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// later in attacker&#x27;s code</span></span><br><span class="line"><span class="keyword">for</span> (guess = <span class="number">0</span>; guess &lt; possible_guesses; guess++)&#123;</span><br><span class="line">    start_time = rdtscp();</span><br><span class="line">    tmp = probe_array[guess * <span class="number">512</span>];</span><br><span class="line">    times[guess] = rdtscp() - start_time;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// restore secret</span></span><br><span class="line">secret = get_min_index(times);</span><br></pre></td></tr></table></figure>
 

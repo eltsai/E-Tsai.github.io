@@ -28,10 +28,10 @@
 <meta property="og:description" content="音频文件格式相关。">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://img.shields.io/badge/Lan-CN-orange">
-<meta property="og:image" content="https://eltsai.github.io/2018/07/19/music-format/sampling.jpg">
-<meta property="og:image" content="https://eltsai.github.io/2018/07/19/music-format/algo.png">
+<meta property="og:image" content="https://etsai.site/music-format/sampling.jpg">
+<meta property="og:image" content="https://etsai.site/music-format/algo.png">
 <meta property="article:published_time" content="2018-07-20T01:48:45.000Z">
-<meta property="article:modified_time" content="2021-10-30T15:38:41.340Z">
+<meta property="article:modified_time" content="2021-10-31T15:32:59.467Z">
 <meta property="article:author" content="Elisa Tsai">
 <meta property="article:tag" content="music">
 <meta property="article:tag" content="CN">
@@ -189,7 +189,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-10-30 11:38:41" itemprop="dateModified" datetime="2021-10-30T11:38:41-04:00">2021-10-30</time>
+                <time title="Modified: 2021-10-31 11:32:59" itemprop="dateModified" datetime="2021-10-31T11:32:59-04:00">2021-10-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -216,9 +216,7 @@
 <p>音频文件格式相关。</p>
  <span id="more"></span>
 
-<h1 id="音频简介"><a href="#音频简介" class="headerlink" title="音频简介"></a>音频简介</h1><p><strong>一个mp3是320kbps，44100hz的，这是什么意思？</strong><br>44100Hz代表的是信号的采样率。<strong>所谓采样，就是每隔单位时间获取一次当前时刻声波的y值。采样是将连续的数据离散化的过程（将模拟信号转为数字信号）。</strong></p>
-<img src="/2018/07/19/music-format/sampling.jpg" class="" title="Sampling"> [图片来源](https://arstechnica.com/features/2007/09/the-audiofile-basicsof-uncompressed-digital-audio/)
-
+<h1 id="音频简介"><a href="#音频简介" class="headerlink" title="音频简介"></a>音频简介</h1><p><strong>一个mp3是320kbps，44100hz的，这是什么意思？</strong><br>44100Hz代表的是信号的采样率。<strong>所谓采样，就是每隔单位时间获取一次当前时刻声波的y值。采样是将连续的数据离散化的过程（将模拟信号转为数字信号）。</strong><br><img src="https://etsai.site/music-format/sampling.jpg"> <a target="_blank" rel="noopener" href="https://arstechnica.com/features/2007/09/the-audiofile-basicsof-uncompressed-digital-audio/">图片来源</a></p>
 <p>以上提到的采样方法叫做PCM（脉冲编码调制，Pulse Code Modulation）。根据Nyquist-Shannon采样定律，采样率至少应该是你的目标最高频率的两倍。人耳的听觉范围大概是20Hz-20000Hz (如果你好奇自己能听见多高的声音的话，可以点击<a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=VxcbppCX6Rk">这里</a>测试你的耳朵) ，虽然录音软件常常也有48000hz的选项，但是我们可以安全地得出结论：44100Hz几乎可以满足我们所有的需求，更高的只不过在浪费你的内存和cpu。超过48000的采样对人耳已经没有意义，这和电影的每秒 24 帧图片的道理差不多。44100Hz恰好是几乎所有发行音乐的标准采样率。事实上，对于人声以及很多乐器来说，高频的声音是噪音，因而，高采样率有时会让你的音质变差（所以我们需要调整EQ）。</p>
 <p>320kbps代表着它的<strong>码率/比特率</strong>（bite rate），它是kilobits per second的缩写，代表着用来描述声音的数据大小。在CD（未经压缩的音频文件）里，码率为1411.2kbps，而达到CD音质的mp3音质应当高于128kbps / 44100Hz（128kbps可以说是最常见的比特率了）。 通常来说一个更大的数字代表着更好的品质。品质取决于很多因素（比如编码的算法）。很多时候我们不需太高的比特率：我们的设备播放出的mp3和CD可能并无区别（声卡/音响普通）。</p>
 <p>一个wav是44100Hz 16bit stereo 或者 22050Hz 8bit mono，这又是什么意思？stereo/mono指的是双/单声道。对于单声道声音文件，采样数据为八位的短整数（short int 00H-FFH）；而对于双声道立体声声音文件，每次采样数据为一个16位的整数（int），高八位(左声道)和低八位(右声道)分别代表两个声道。</p>
@@ -396,8 +394,7 @@
 <h4 id="ID3V1格式"><a href="#ID3V1格式" class="headerlink" title="ID3V1格式"></a>ID3V1格式</h4><p>ID3V1存放在MP3文件结尾，共128bytes，各项信息都顺序存放，不足部分使用‘\0’补足。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">tagID3V1</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">char</span> Header[<span class="number">3</span>]; <span class="comment">/*标签头必须是&quot;TAG&quot;否则认为没有标签*/</span></span><br><span class="line"><span class="keyword">char</span> Title[<span class="number">30</span>]; <span class="comment">/*标题*/</span></span><br><span class="line"><span class="keyword">char</span> Artist[<span class="number">30</span>]; <span class="comment">/*作者*/</span></span><br><span class="line"><span class="keyword">char</span> Album[<span class="number">30</span>]; <span class="comment">/*专集*/</span></span><br><span class="line"><span class="keyword">char</span> Year[<span class="number">4</span>]; <span class="comment">/*出品年代*/</span></span><br><span class="line"><span class="keyword">char</span> Comment[<span class="number">28</span>]; <span class="comment">/*备注*/</span></span><br><span class="line"><span class="keyword">char</span> reserve; <span class="comment">/*保留*/</span></span><br><span class="line"><span class="keyword">char</span> track;; <span class="comment">/*音轨*/</span></span><br><span class="line"><span class="keyword">char</span> Genre; <span class="comment">/*类型*/</span></span><br><span class="line"></span><br><span class="line">&#125;ID3V1,*pID3V1;</span><br></pre></td></tr></table></figure>
 <h3 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h3><p>MP3的首尾都是标记身份的信息，中间的frame则是音频的编码。MP3运用心理学声（Psychoacoustic, 将人类听觉范围外的声音舍弃；simultaneous masking: 如果同时有强声&amp;弱声，舍弃弱声）等技术，舍弃了脉冲编码调制 (PCM) 的音频中对人类听觉不重要的数据。它的前身MP2，来源于为EUREKA (就是阿基里德从浴盆里跳出来的时候大喊的那个eureka) 项目资助的数字音频广播项目DAB. MP2的压缩率大概在6:1 ~ 8:1，但当时的计算机硬盘普遍只有500MB，这样的音频还是略显奢侈了。而MP3可以将一个完整的音乐文件压缩到原件的8%，权衡了数据大小和音质质量。</p>
-<img src="/2018/07/19/music-format/algo.png" class="" title="Sampling">
-
+<p><img src="https://etsai.site/music-format/algo.png"></p>
 <p>关于编码的详情在资料的[5], [6].</p>
 <p>一点无关的东西：由于CD介质的Tom’s Diner (Suzanne Vega)柔和，旋律简单，因此容易听到压缩格式的缺陷，发明者布兰登堡便使用这首歌来评价MP3算法的优劣。因而，有人开玩笑地称Suzanne Vega为“MP3之母”。出于好奇，我查了一下这首歌，和Fall Out Boys的Centuries开头简直一模一样，可能是某种致敬。</p>
 <h1 id="资料来源"><a href="#资料来源" class="headerlink" title="资料来源"></a>资料来源</h1><p> [1]<a target="_blank" rel="noopener" href="https://blog.csdn.net/xiahouzuoxin/article/details/7849249">mp3编码分析</a><br> [2]<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/MP3">mp3维基</a><br> [3]<a target="_blank" rel="noopener" href="https://fanzheng.org/archives/37">wav格式详解</a><br> [4]<a target="_blank" rel="noopener" href="https://fanzheng.org/archives/36">声音的产生与数字化</a><br> [5]<a target="_blank" rel="noopener" href="https://blog.csdn.net/ffmpeg4976/article/details/46943585">MP3压缩算法</a><br> [6]<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/58df71a19901">MP3解码算法原理解析</a></p>

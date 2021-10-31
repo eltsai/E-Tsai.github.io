@@ -28,9 +28,9 @@
 <meta property="og:description" content="Fork和它的变体是Unix系统创建进程 (process) 的方法，在这篇文章里我们会探索它是如何实现的。">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://img.shields.io/badge/Lan-CN-orange">
-<meta property="og:image" content="https://eltsai.github.io/2019/09/22/fork-implementation/fork.jpg">
+<meta property="og:image" content="https://etsai.site/fork-implementation/fork.jpg">
 <meta property="article:published_time" content="2019-09-22T06:02:07.000Z">
-<meta property="article:modified_time" content="2021-10-30T15:38:41.284Z">
+<meta property="article:modified_time" content="2021-10-31T15:34:19.556Z">
 <meta property="article:author" content="Elisa Tsai">
 <meta property="article:tag" content="CN">
 <meta property="article:tag" content="systems">
@@ -188,7 +188,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2021-10-30 11:38:41" itemprop="dateModified" datetime="2021-10-30T11:38:41-04:00">2021-10-30</time>
+                <time title="Modified: 2021-10-31 11:34:19" itemprop="dateModified" datetime="2021-10-31T11:34:19-04:00">2021-10-31</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -228,7 +228,7 @@
 <p>Linux允许两个进程共享资源，包括文件，signal handler，和虚拟内存。相应资源的<code>count</code>会增加，这样系统就不会错误地释放资源（比如关闭正在被读取的文件），创造危险的空指针。比如当父进程和子进程同时拥有指向某个<code>mm_struct</code>的指针，那么<code>mm_struct</code>中的<code>count</code>就会增加，操作系统会在释放它之前检查<code>count</code>域。</p>
 <p>克隆进程的虚拟内存要麻烦一些。一组新的<code>vm_area_struct</code>，它们的<code>mm_struct</code>以及子进程的页表需要被操作系统生成。在此刻，父进程的虚拟内存还没有被复制。父进程的虚拟内存可能在物理内存中，可能在父进程正在执行的可执行映象中，或是在某个swap文件中 (因为它正被运行)。由此可见，复制它的开销并不小。</p>
 <p>所以Linux使用写时复制策略，这意味着仅当两个进程之一尝试向其写入时才复制虚拟内存，它才会为子进程复制。只读的页面是共享的，为了使“写时复制”起作用，可写区域的页表条目被标记为只读，而描述它们的<code> vm_area_struct</code>数据结构被标记为<code>copy_on_write</code>，当进程之一尝试写入此虚拟内存时，将发生page fault，此时，Linux将复制内存并修复两个进程的页表和虚拟内存数据结构。</p>
-<img src="/2019/09/22/fork-implementation/fork.jpg" class="">
+<p><img src="https://etsai.site/fork-implementation/fork.jpg"></p>
 
     </div>
 
