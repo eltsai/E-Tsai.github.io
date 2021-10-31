@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/eltsai/E-Tsai.github.io/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/eltsai/E-Tsai.github.io/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/eltsai/E-Tsai.github.io/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/eltsai/E-Tsai.github.io/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/eltsai/E-Tsai.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/eltsai/E-Tsai.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"github.com","root":"/eltsai/E-Tsai.github.io/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Fork和它的变体是Unix系统创建进程 (process) 的方法，在这篇文章里我们会探索它是如何实现的。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux中的fork()是怎么实现的">
+<meta property="og:url" content="https://github.com/eltsai/E-Tsai.github.io/fork-implementation/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Fork和它的变体是Unix系统创建进程 (process) 的方法，在这篇文章里我们会探索它是如何实现的。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img.shields.io/badge/Lan-CN-orange">
+<meta property="og:image" content="https://github.com/2019/09/22/fork-implementation/fork.jpg">
+<meta property="article:published_time" content="2019-09-22T06:02:07.000Z">
+<meta property="article:modified_time" content="2021-10-30T15:38:41.284Z">
+<meta property="article:author" content="Elisa Tsai">
+<meta property="article:tag" content="CN">
+<meta property="article:tag" content="systems">
+<meta property="article:tag" content="technics">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img.shields.io/badge/Lan-CN-orange">
+
+<link rel="canonical" href="https://github.com/eltsai/E-Tsai.github.io/fork-implementation/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Linux中的fork()是怎么实现的 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/eltsai/E-Tsai.github.io/atom.xml" title="Hexo" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/eltsai/E-Tsai.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/eltsai/E-Tsai.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/eltsai/E-Tsai.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://github.com/eltsai/E-Tsai.github.io/fork-implementation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/eltsai/E-Tsai.github.io/images/avatar.gif">
+      <meta itemprop="name" content="Elisa Tsai">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux中的fork()是怎么实现的
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-09-22 02:02:07" itemprop="dateCreated datePublished" datetime="2019-09-22T02:02:07-04:00">2019-09-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-10-30 11:38:41" itemprop="dateModified" datetime="2021-10-30T11:38:41-04:00">2021-10-30</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/eltsai/E-Tsai.github.io/categories/CS/" itemprop="url" rel="index"><span itemprop="name">CS</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><img src="https://img.shields.io/badge/Lan-CN-orange"></p>
+<p>Fork和它的变体是Unix系统创建进程 (process) 的方法，在这篇文章里我们会探索它是如何实现的。</p>
+<span id="more"></span>
+
+<h2 id="Fork-简介"><a href="#Fork-简介" class="headerlink" title="Fork()简介"></a>Fork()简介</h2><p>在多任务实时操作系统内，我们需要一个由已经存在的进程创建子进程的方法。Unix系统使用系统调用来创建子进程，这是fork以及它的变体的工作。</p>
+<p>fork会为子进程创建一个单独的<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Address_space">地址空间</a>，以<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Copy-on-write">写时复制</a>的方法分配物理内存。<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Fork_(system_call)">src</a>.</p>
+<p>当我们的系统从BIOS启动时，在main函数中只有一个进程：0号进程。和所有其他进程一样，它有一系列“状态”，存储在它的栈和寄存器内，这些都会存储在它的<code>task_struct</code>里面。<code>task_struct</code>是系统实现进程地址空间隔离的方法。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> &#123;</span></span><br><span class="line">	<span class="comment">/* these are hardcoded - don&#x27;t touch */</span></span><br><span class="line">	<span class="keyword">long</span> state;	<span class="comment">/* -1 unrunnable, 0 runnable, &gt;0 stopped */</span></span><br><span class="line">	<span class="keyword">long</span> counter;</span><br><span class="line">	<span class="keyword">long</span> priority;</span><br><span class="line">	<span class="keyword">long</span> signal;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">sigaction</span> <span class="title">sigaction</span>[32];</span>	<span class="comment">/* info about how to handle every possible signal*/</span></span><br><span class="line">	<span class="keyword">long</span> blocked;	<span class="comment">/* bitmap of masked signals */</span></span><br><span class="line">	<span class="comment">/* various fields */</span></span><br><span class="line">	<span class="keyword">int</span> exit_code;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> start_code,end_code,end_data,brk,start_stack;</span><br><span class="line">	<span class="keyword">long</span> pid,father,pgrp,session,leader;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> uid,euid,suid;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> gid,egid,sgid;</span><br><span class="line">	<span class="keyword">long</span> alarm;</span><br><span class="line">	<span class="keyword">long</span> utime,stime,cutime,cstime,start_time;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> used_math;</span><br><span class="line">	<span class="comment">/* file system info */</span></span><br><span class="line">	<span class="keyword">int</span> tty;		<span class="comment">/* -1 if no tty, so it must be signed */</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> umask;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">m_inode</span> * <span class="title">pwd</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">m_inode</span> * <span class="title">root</span>;</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">m_inode</span> * <span class="title">executable</span>;</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span> close_on_exec;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">file</span> * <span class="title">filp</span>[<span class="title">NR_OPEN</span>];</span></span><br><span class="line">	<span class="comment">/* ldt for this task 0 - zero 1 - cs 2 - ds&amp;ss */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">desc_struct</span> <span class="title">ldt</span>[3];</span></span><br><span class="line">	<span class="comment">/* tss for this task */</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">tss_struct</span> <span class="title">tss</span>;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>当整个系统的初始化结束后，进程0会启动一个内核线程 (<code>init()</code>)，然后进入idle模式。当操作系统中没有其他进程时，调度器 (scheduler) 会运行这个idle进程。</p>
+<p>事实上，这个idle进程 (进程0)是唯一一个不是动态创建的进程。在编译内核的时候，我们就已经静态定义了它的栈空间 (它的名字是<code>init_task</code>). </p>
+<h2 id="Fork-实现"><a href="#Fork-实现" class="headerlink" title="Fork()实现"></a>Fork()实现</h2><p>创建子进程需要内核权限，当fork()被调用时，一个新的<code>task_struct</code>被创建。父进程的信息被复制进子进程。</p>
+<p>Linux允许两个进程共享资源，包括文件，signal handler，和虚拟内存。相应资源的<code>count</code>会增加，这样系统就不会错误地释放资源（比如关闭正在被读取的文件），创造危险的空指针。比如当父进程和子进程同时拥有指向某个<code>mm_struct</code>的指针，那么<code>mm_struct</code>中的<code>count</code>就会增加，操作系统会在释放它之前检查<code>count</code>域。</p>
+<p>克隆进程的虚拟内存要麻烦一些。一组新的<code>vm_area_struct</code>，它们的<code>mm_struct</code>以及子进程的页表需要被操作系统生成。在此刻，父进程的虚拟内存还没有被复制。父进程的虚拟内存可能在物理内存中，可能在父进程正在执行的可执行映象中，或是在某个swap文件中 (因为它正被运行)。由此可见，复制它的开销并不小。</p>
+<p>所以Linux使用写时复制策略，这意味着仅当两个进程之一尝试向其写入时才复制虚拟内存，它才会为子进程复制。只读的页面是共享的，为了使“写时复制”起作用，可写区域的页表条目被标记为只读，而描述它们的<code> vm_area_struct</code>数据结构被标记为<code>copy_on_write</code>，当进程之一尝试写入此虚拟内存时，将发生page fault，此时，Linux将复制内存并修复两个进程的页表和虚拟内存数据结构。</p>
+<img src="/2019/09/22/fork-implementation/fork.jpg" class="">
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/eltsai/E-Tsai.github.io/tags/CN/" rel="tag"># CN</a>
+              <a href="/eltsai/E-Tsai.github.io/tags/systems/" rel="tag"># systems</a>
+              <a href="/eltsai/E-Tsai.github.io/tags/technics/" rel="tag"># technics</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/eltsai/E-Tsai.github.io/Hakuna-Matata/" rel="prev" title="Hakuna Matata">
+      <i class="fa fa-chevron-left"></i> Hakuna Matata
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/eltsai/E-Tsai.github.io/source-code-found-online/" rel="next" title="Source Code Found Online">
+      Source Code Found Online <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Fork-%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">Fork()简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Fork-%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">Fork()实现</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Elisa Tsai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/eltsai/E-Tsai.github.io/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/eltsai/E-Tsai.github.io/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/eltsai/E-Tsai.github.io/tags/">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/eltsai" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;eltsai"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/dumblelisapapernotes" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;dumblelisapapernotes" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Telegram</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://scholar.google.com/citations?user=3NA-OTQAAAAJ" title="Scholar → https:&#x2F;&#x2F;scholar.google.com&#x2F;citations?user&#x3D;3NA-OTQAAAAJ" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>Scholar</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.instagram.com/elisatdraws/" title="Instagram → https:&#x2F;&#x2F;www.instagram.com&#x2F;elisatdraws&#x2F;" rel="noopener" target="_blank"><i class="fab fa-instagram fa-fw"></i>Instagram</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Elisa Tsai</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/eltsai/E-Tsai.github.io/lib/anime.min.js"></script>
+  <script src="/eltsai/E-Tsai.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/eltsai/E-Tsai.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/eltsai/E-Tsai.github.io/js/utils.js"></script>
+
+<script src="/eltsai/E-Tsai.github.io/js/motion.js"></script>
+
+
+<script src="/eltsai/E-Tsai.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/eltsai/E-Tsai.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/eltsai/E-Tsai.github.io/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/eltsai/E-Tsai.github.io/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/eltsai/E-Tsai.github.io/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/eltsai/E-Tsai.github.io/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/eltsai/E-Tsai.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/eltsai/E-Tsai.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"github.com","root":"/eltsai/E-Tsai.github.io/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="从流水线 (pipeline) 到乱序执行 (out-of-order)，处理器的指令级并行保证了其性能上的绝大提升。但是在性能提升的同时，安全性的问题也随之出现。这篇博客主要介绍预测执行攻击。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spectres And Meltdown">
+<meta property="og:url" content="https://github.com/eltsai/E-Tsai.github.io/spectres-and-meltdown/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="从流水线 (pipeline) 到乱序执行 (out-of-order)，处理器的指令级并行保证了其性能上的绝大提升。但是在性能提升的同时，安全性的问题也随之出现。这篇博客主要介绍预测执行攻击。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img.shields.io/badge/Lan-CN-orange">
+<meta property="og:image" content="http://renesasrulz.com/cfs-file.ashx/__key/communityserver-blogs-components-weblogfiles/00-00-00-00-67/RX_5F00_pipeline_5F00_550.gif">
+<meta property="og:image" content="https://www.researchgate.net/profile/Dimitris_Kehagias/publication/318502489/figure/fig1/AS:533824906170368@1504285183057/1-The-basic-structure-of-a-MIPS-floating-point-unit-using-Tomasulos-algorithm.png">
+<meta property="og:image" content="https://miro.medium.com/max/3598/1*-EkJxntbntPppqfPgTjbWg.png">
+<meta property="og:image" content="https://miro.medium.com/max/3601/1*R3SKGOakznWoCMp76TGebg.png">
+<meta property="og:image" content="https://softwarerajivprab.files.wordpress.com/2019/07/cache.png">
+<meta property="og:image" content="https://miro.medium.com/max/751/1*xPqqyrbiNO7yrAsu9_VxWw.png">
+<meta property="og:image" content="https://miro.medium.com/max/3601/1*ESJwtRksgWYNWL95sW9mPw.png">
+<meta property="og:image" content="https://github.com/2019/11/21/spectres-and-meltdown/Spectres.jpg">
+<meta property="article:published_time" content="2019-11-21T18:17:58.000Z">
+<meta property="article:modified_time" content="2021-10-30T15:38:41.340Z">
+<meta property="article:author" content="Elisa Tsai">
+<meta property="article:tag" content="CN">
+<meta property="article:tag" content="systems">
+<meta property="article:tag" content="security">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img.shields.io/badge/Lan-CN-orange">
+
+<link rel="canonical" href="https://github.com/eltsai/E-Tsai.github.io/spectres-and-meltdown/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>Spectres And Meltdown | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/eltsai/E-Tsai.github.io/atom.xml" title="Hexo" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/eltsai/E-Tsai.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/eltsai/E-Tsai.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/eltsai/E-Tsai.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://github.com/eltsai/E-Tsai.github.io/spectres-and-meltdown/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/eltsai/E-Tsai.github.io/images/avatar.gif">
+      <meta itemprop="name" content="Elisa Tsai">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Spectres And Meltdown
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-11-21 13:17:58" itemprop="dateCreated datePublished" datetime="2019-11-21T13:17:58-05:00">2019-11-21</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-10-30 11:38:41" itemprop="dateModified" datetime="2021-10-30T11:38:41-04:00">2021-10-30</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/eltsai/E-Tsai.github.io/categories/CS/" itemprop="url" rel="index"><span itemprop="name">CS</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><img src="https://img.shields.io/badge/Lan-CN-orange"></p>
+<p>从流水线 (pipeline) 到乱序执行 (out-of-order)，处理器的指令级并行保证了其性能上的绝大提升。但是在性能提升的同时，安全性的问题也随之出现。这篇博客主要介绍预测执行攻击。</p>
+<span id="more"></span>
+
+<p>本文是在USTCLUG weekly party上的讲稿，直接使用了很多博客里的图片，引用源都列在了参考章节。</p>
+<h2 id="词汇解释"><a href="#词汇解释" class="headerlink" title="词汇解释"></a>词汇解释</h2><h3 id="乱序-out-of-order"><a href="#乱序-out-of-order" class="headerlink" title="乱序 (out-of-order)"></a>乱序 (out-of-order)</h3><p><strong>循序执行 (in-order)</strong></p>
+<p>在早期的处理器中，指令的执行一般在以下的步骤中完成：</p>
+<ol>
+<li>指令获取。</li>
+<li>如果输入的运算对象是可以获取的（比如已经存在于寄存器中），这条指令会被发送到合适的功能单元。如果一个或者更多的运算对象在当前的时钟周期中是不可获取的（通常需要从主存获取），处理器会开始等待直到它们是可以获取的。</li>
+<li>指令在合适的功能单元中被执行。</li>
+<li>功能单元将运算结果写回寄存器。</li>
+</ol>
+<p><strong>乱序执行 (o3)</strong></p>
+<p>这种范式通过以下步骤挑选可执行的指令先运行：</p>
+<ol>
+<li>指令获取。</li>
+<li>指令被发送到一个指令序列中（也称执行缓冲区或者保留站（reservation station））。</li>
+<li>指令将在序列中等待直到它的数据运算对象是可以获取的。然后指令被允许在先进入的、旧的指令之前离开序列缓冲区。</li>
+<li>指令被分配给一个合适的功能单元并由之执行。</li>
+<li>结果被放到一个序列中。</li>
+<li>仅当所有在该指令之前的指令都将他们的结果写入寄存器后，这条指令的结果才会被写入寄存器中。这个过程被称为毕业或者退休（retire）周期。</li>
+</ol>
+<p>乱序执行的重要概念是实现了避免计算机在用于运算的对象不可获取时的大量等待。在上述文字的要点中，乱序执行处理器避免了在顺序执行处理器处理过程第二步中当指令由于运算数据未到位所造成的等待。</p>
+<p><img src="http://renesasrulz.com/cfs-file.ashx/__key/communityserver-blogs-components-weblogfiles/00-00-00-00-67/RX_5F00_pipeline_5F00_550.gif"></p>
+<p><strong>Tomasulo算法</strong></p>
+<p>在处理器中，先后执行的指令之间经常具有相关性（例如后一条指令用到前一条指令向寄存器写入的结果），因此早期简单的处理器使后续指令停顿，直到其所需的资源已经由前序指令准备就绪。Tomasulo算法则通过动态调度的方式，在不影响结果正确性的前提下，重新排列指令实际执行的顺序（乱序执行），提高时间利用效率。</p>
+<p><img src="https://www.researchgate.net/profile/Dimitris_Kehagias/publication/318502489/figure/fig1/AS:533824906170368@1504285183057/1-The-basic-structure-of-a-MIPS-floating-point-unit-using-Tomasulos-algorithm.png"> </p>
+<h3 id="旁路攻击-side-channel-attacks"><a href="#旁路攻击-side-channel-attacks" class="headerlink" title="旁路攻击 (side-channel attacks)"></a>旁路攻击 (side-channel attacks)</h3><p>较之暴力破解攻击和密码算法的理论性弱点分析，旁路攻击侧重的是物理信息，例如时间，功率消耗，点此邪路或是声音。它的信息来源于计算机系统如何被implement，而不是被implement的算法或是设计。这些是“额外的信息”，所以被称为side-channel.</p>
+<p>根据借助的介质，旁路攻击分为多个大类，包括：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/w/index.php?title=%E5%BF%AB%E5%8F%96%E6%97%81%E8%B7%AF%E6%94%BB%E6%93%8A&action=edit&redlink=1">缓存攻击</a>，通过获取对缓存的访问权而获取缓存内的一些敏感信息，例如攻击者获取云端主机物理主机的访问权而获取存储器的访问权，我们接下来会讲到的大部分<strong>预测执行攻击</strong>都属于缓存攻击；</li>
+<li><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/w/index.php?title=%E8%A8%88%E6%99%82%E6%94%BB%E6%93%8A&action=edit&redlink=1">计时攻击</a>，通过设备运算的用时来推断出所使用的运算操作，或者通过对比运算的时间推定数据位于哪个存储设备，或者利用通信的时间差进行数据窃取，<a target="_blank" rel="noopener" href="https://mlq.me/download/netspectre.pdf">NetSpectre</a>就是计时攻击的一个例子。</li>
+</ul>
+<p>除此之外，还有<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%8A%9F%E8%80%97%E5%88%86%E6%9E%90">基于功耗监控的旁路攻击</a>，<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/w/index.php?title=%E9%9B%BB%E7%A3%81%E6%94%BB%E6%93%8A&action=edit&redlink=1">电磁攻击</a>（如<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/w/index.php?title=TEMPEST&action=edit&redlink=1">TEMPEST</a>攻击），<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E5%B7%AE%E5%88%A5%E9%8C%AF%E8%AA%A4%E5%88%86%E6%9E%90">差别错误分析</a>，<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/w/index.php?title=%E6%95%B0%E6%8D%AE%E6%AE%8B%E7%95%99&action=edit&redlink=1">数据残留</a>等等，但是在这种攻击下在预测执行的前提下很难实现，就不展开讲了。</p>
+<p>所有的攻击类型都利用了加密/解密系统在进行加密/解密操作时算法逻辑没有被发现缺陷，但是通过物理效应提供了有用的额外信息（这也是称为“旁路”的缘由），而这些物理信息往往包含了密钥、密码、密文等隐密数据。</p>
+<h3 id="虚拟内存-virtual-memory"><a href="#虚拟内存-virtual-memory" class="headerlink" title="虚拟内存 (virtual memory)"></a>虚拟内存 (virtual memory)</h3><p>在现代计算机中，将虚拟地址转换为物理地址是非常常见的操作。如果把这个工作交给操作系统，那就太慢了。现代CPU硬件提供了一种称为TLB (Translation Lookaside Buffer) 的缓存，该设备可缓存最近使用的映射。这样，CPU大部分时间都可以直接在硬件中直接执行地址转换。</p>
+<p><img src="https://miro.medium.com/max/3598/1*-EkJxntbntPppqfPgTjbWg.png"></p>
+<p>从上图中我们可以看到一个内存地址的翻译过程：首先在TLB中查找，如果在TLB中没有找到对应条目，则在页表中去寻找，如果成功了，则返回地址，并将它加入TLB，如果也失败了，操作系统会raise一个page fault.</p>
+<p><img src="https://miro.medium.com/max/3601/1*R3SKGOakznWoCMp76TGebg.png"></p>
+<p>上图是现代计算机中虚拟内存的一个示例 (pre-meltdown)，红色是内核内存（只有操作系统可以访问），蓝色是用户程序的内存，蓝色是未分配的内存。</p>
+<p>每一个页面 (page, 常见的page size是4KB) 都有一个permission bit，标志他是否是内核内存。如果一个用户程序师徒访问内核内存，就会导致page fault，操作系统在此时会终止此次访问。</p>
+<h3 id="缓存-cache"><a href="#缓存-cache" class="headerlink" title="缓存 (cache)"></a>缓存 (cache)</h3><p>在计算机系统中，CPU高速缓存（英语：CPU Cache，在本文中简称缓存）是用于减少处理器访问内存所需平均时间的部件。</p>
+<p><img src="https://softwarerajivprab.files.wordpress.com/2019/07/cache.png"></p>
+<h3 id="预测执行-speculation-execution-attack"><a href="#预测执行-speculation-execution-attack" class="headerlink" title="预测执行 (speculation execution attack)"></a>预测执行 (speculation execution attack)</h3><p>预测执行是优化技术的一类，采用这个技术的计算机系统会根据现有信息，利用空转时间提前执行一些将来可能用得上，也可能用不上的指令。如果指令执行完成后发现用不上，系统会抛弃计算结果，并回退 (squash) 执行期间造成的副作用。 推测执行的目标是在处理器系统资源过剩的情况下并行处理其他任务。推测执行无处不在。流水处理器的分支预测、数值预测、 预读取内存和文件、以及数据库系统的乐观并发控制等机能中都采用到了推测执行。</p>
+<p><img src="https://miro.medium.com/max/751/1*xPqqyrbiNO7yrAsu9_VxWw.png" alt="img"></p>
+<p>上图是一个现代处理器的执行引擎。我们知道，处理器有多级缓存，每一级的缓存miss都会延迟程序执行的时间，为了优化时间上的性能，现代处理器引入了预测执行，举一个简单的例子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(x &lt; array_size)&#123;</span><br><span class="line">    y = probe_array[array0[x] * <span class="number">256</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>想象这样一个情形：当执行这个代码时，<code>array_size</code>并不在内存中，与其原地空等它的值，不如让分支预测单元 (BPU, Branch Prediction Unit) 预测一下这个if判断是1还是0，然后根据它的预测，在等待<code>array_size</code>的时间内执行BPU选择的代码块的指令。如果后来发现BPU判断错误，也没有关系，处理器只要抛弃此时预测执行的指令所产生的计算结果，回退到if判断指令就行了。此时的时间性能仍然不会比空等更糟。</p>
+<p>另一类常见的预测执行被称为间接分支预测 (indirect branch predict)，由于动态调度 (virtual dispatch)，这个情形非常普遍。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Base</span> &#123;</span></span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">Foo</span><span class="params">()</span> </span>= <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Derived</span> :</span> <span class="keyword">public</span> Base &#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">Foo</span><span class="params">()</span> <span class="keyword">override</span> </span>&#123; … &#125;</span><br><span class="line">&#125;;</span><br><span class="line">Base* obj = <span class="keyword">new</span> Derived;</span><br><span class="line">obj-&gt;<span class="built_in">Foo</span>();</span><br></pre></td></tr></table></figure>
+
+<p>在机器代码中，这一代码段的实现方式是让目标文件 (obj) 从指向的内存位置加载虚拟调度表 (v-table)，然后调用它。由于此操作非常普遍，因此现代CPU具有各种内部缓存，并且经常会猜测间接分支将到达的位置并在该点继续执行。同样，如果处理器猜对了，它可以继续节省大量时间。如果不是这样，它可能会丢弃推测性的计算并重新开始。</p>
+<h2 id="熔断-Meltdown-流水线带来的挑战"><a href="#熔断-Meltdown-流水线带来的挑战" class="headerlink" title="熔断 (Meltdown): 流水线带来的挑战"></a>熔断 (Meltdown): 流水线带来的挑战</h2><p>一般来说，普通的用户应用不能够随意地访问内核内存。Meltdown将用户内存和内核内存的安全界限模糊 (melt)了，所以被称为meltdown.</p>
+<h3 id="伪码"><a href="#伪码" class="headerlink" title="伪码"></a>伪码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//assume probe array is flushed</span></span><br><span class="line">secret_byte = *kernel_address;			<span class="comment">// 指令1</span></span><br><span class="line">tmp = probe_array[secret_byte* <span class="number">512</span>];	<span class="comment">// 指令2</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (guess = <span class="number">0</span>; guess &lt; possible_guesses; guess++)&#123;</span><br><span class="line">    start_time = rdtscp();</span><br><span class="line">    tmp = probe_array[guess * <span class="number">512</span>];</span><br><span class="line">    times[guess] = rdtscp() - start_time;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// restore secret</span></span><br><span class="line">secret = get_min_index(times);</span><br></pre></td></tr></table></figure>
+
+<p><strong>注释</strong></p>
+<p>指令一会导致操作系统抛出异常（内核内存页权限位与用户内存不同），在抛出异常之前，由于预测执行，指令二会将本来不应该访问的内核内存地址存入缓存中。</p>
+<p>probe_array是提前分配好内存的数组，这就是我们的旁道 (side-channel)，攻击者会确保在指令一之前，probe_array所有的项都不在缓存里。</p>
+<p>这里的<code>rdtscp()</code>是intel 64和IA-32架构上的一个Read Time-Stamp Counter and Processor ID函数。处理器中有一个时间戳寄存器 (time-stamp register)，这个函数会读取它的值，提供处理器时钟周期级别的时间 (GHz instead of ms)。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">inline</span> __attribute__((always_inline))  <span class="function"><span class="keyword">uint64_t</span> <span class="title">rdtscp</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> low, high;</span><br><span class="line">    <span class="function"><span class="keyword">asm</span> <span class="title">volatile</span><span class="params">(<span class="string">&quot;rdtscp&quot;</span> : <span class="string">&quot;=a&quot;</span> (low), <span class="string">&quot;=d&quot;</span> (high) :: <span class="string">&quot;rcx&quot;</span> )</span></span>;</span><br><span class="line">    <span class="keyword">return</span> low | ((<span class="keyword">uint64_t</span>)high) &lt;&lt; <span class="number">32</span>; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Meltdown出现不是因为乱序执行 (out-of-order)，流水线处理器都有可能有此安全缺陷。指令1和2虽然有数据依赖，但只要在流水线情形下，就可能在page fault之前把内核地址内容取进缓存里。</p>
+<p>旁道攻击一般分为三个阶段：access - transit - recover. 在上面的伪代码中，指令1是access phase (接触到秘密地址)，指令2是transit phase (将秘密保存到旁道中)，后面攻击者做的工作是recovery phase：通过计时等方法把秘密恢复出来。</p>
+<h3 id="补丁"><a href="#补丁" class="headerlink" title="补丁"></a>补丁</h3><p>你可能会想了，这个问题并不难解决，只要在预测执行的时候也检查权限位就好了。事实也是这样，在预测执行时略过权限检查并不能带来多少性能提升。这也是meltdown （与spectre比较）的补丁更加简单，易于理解的原因。</p>
+<p>拿Linux的meltdown补丁来讲，KPTI (Kernel Page Table Isolation, 原KAISER) 是一个软件补丁，它的原理简单来说是这样的：当程序在用户空间中运行时，内核内存时不将其映射到程序中。如果运行时出现映射不存在的情况，则推测执行将被停止，直接fault.</p>
+<p><img src="https://miro.medium.com/max/3601/1*ESJwtRksgWYNWL95sW9mPw.png"></p>
+<p>听起来非常直接美好，但是这个软件补丁会造成不小的性能下降。可以想象，如果没有硬件上的支持，由于用户态和内核态的频繁切换，页表也会被频繁更改，TLB也需要被flush.</p>
+<p>在<code>/sys/devices/system/cpu/vulnerabilities/</code>下有处理器漏洞的log，在我设备上是这样的：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">elisa:~$ ls /sys/devices/system/cpu/vulnerabilities/</span><br><span class="line">itlb_multihit  mds       spec_store_bypass  spectre_v2</span><br><span class="line">l1tf           meltdown  spectre_v1         tsx_async_abort</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>我们来查看一下meltdown的补丁：</p>
+ <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cat /sys/devices/system/cpu/vulnerabilities/meltdown </span><br><span class="line">Mitigation: PTI</span><br></pre></td></tr></table></figure>
+
+<h2 id="幽灵"><a href="#幽灵" class="headerlink" title="幽灵"></a>幽灵</h2><p>幽灵 (spectre) 得以存在的根本原因是预测执行 (speculation execution)，比起熔断，它跟不容易被攻击者利用，然而，它的防治并没有Meltdown那么简单。</p>
+<h3 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h3><img src="/2019/11/21/spectres-and-meltdown/Spectres.jpg" class="">
+
+<p>我们把Spectre根据access phase分成四类，其中的Spectre v3就是刚刚讨论过的meltdown，接下来我们将展示Spectre v1的伪代码，并演示v1和v4的几种变种 (variant).</p>
+<h3 id="Spectre-v1-伪码"><a href="#Spectre-v1-伪码" class="headerlink" title="Spectre v1 伪码"></a>Spectre v1 伪码</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// assume probe_array is flushed from cache</span></span><br><span class="line"><span class="keyword">if</span> (some_condition)&#123;</span><br><span class="line">    secret_byte = *secret_addr;				<span class="comment">// 指令1</span></span><br><span class="line">    tmp = probe_array[secret_byte * <span class="number">512</span>];	<span class="comment">//指令2</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// later in attacker&#x27;s code</span></span><br><span class="line"><span class="keyword">for</span> (guess = <span class="number">0</span>; guess &lt; possible_guesses; guess++)&#123;</span><br><span class="line">    start_time = rdtscp();</span><br><span class="line">    tmp = probe_array[guess * <span class="number">512</span>];</span><br><span class="line">    times[guess] = rdtscp() - start_time;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// restore secret</span></span><br><span class="line">secret = get_min_index(times);</span><br></pre></td></tr></table></figure>
+
+<p>上面展示的是一个基于d-cache的Spctre v1 (Bounds Check Bypass). Spectre的原理与Meltdown类似，他们都是利用wrong-path的预测执行，让秘密进入我们设好的旁道中。在这个伪代码中，旁道是cache，它也可以是BTB，TLB.  所有会在预测执行时被更改状态，并在squash的时候没有恢复的组件，都是潜在的旁道。</p>
+<p>近期出现的许多攻击也证明了之前很多研究只着眼缓存并不是明智的选择。例如NetSpectre利用了AVX (Advanced Vector Extensions) 的隐秘信道 (60 bit per hour)，它是一个计时攻击。它的原理很简单，AVX有一个优化：在做大数计算时会打开一个优化单元（平时是关闭的），所以攻击者可以通过预测执行来判断想要知道的秘密是否是大数，这个可以简要理解成0和1的区别，能够分辨0和1，就有了可以缓慢读出整个内存的能力。</p>
+<p>Foreshadow则是利用了Intel的SGX (Software Guard eXtensions) 模块，SGX的保护方式并不是识别和隔离平台上的所有恶意软件，而是将合法软件的安全操作封装在一个enclave中，保护其不受恶意软件的攻击。而且执行SGX的权限非常高，特权或者非特权的软件都无法访问enclave，也就是说，一旦软件和数据位于enclave中，即便操作系统管理员和VMM（Hypervisor）也无法影响enclave里面的代码和数据。Enclave的安全边界只包含CPU和它自身。Foreshadow证明了这样的enclave制造的界限也能被预测执行攻击打破。</p>
+<p>SmotherSpectre则利用了intel处理器hyperthreading时的co-schedule (multi-threading).</p>
+<p>在<a href="https://github.com/crozone/SpectrePoC">这个仓库</a>里有Spectre v1 cache的PoC.</p>
+<h3 id="Spectre-v2-解释"><a href="#Spectre-v2-解释" class="headerlink" title="Spectre v2 解释"></a>Spectre v2 解释</h3><p>Spectre v2 利用的是Indirect Branch Injection. 从上一节我们知道，攻击者可以通过训练分支预测模块来读取内存中的内容。间接分支 (indirect branch) 在现代CPU中非常常见，包括BHB （Branch History Buffer）, IBTB (Indirect Branch Target Buffer) 和 RSB (Return Stack Buffer). (之前我们v1训练的是BTB).</p>
+<h3 id="Spectre-v4-解释"><a href="#Spectre-v4-解释" class="headerlink" title="Spectre v4 解释"></a>Spectre v4 解释</h3><p>Spectre v4利用的是Store Bypass, 一个简单的伪代码可以是这样的：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">str[<span class="number">0</span>]=malicious_x;				<span class="comment">// load quickly</span></span><br><span class="line">str[some_calculation] = <span class="number">0</span>;		<span class="comment">// store slowly</span></span><br><span class="line">temp &amp;= cache_test[probe[str[<span class="number">0</span>]] * <span class="number">512</span>];	<span class="comment">// transit</span></span><br></pre></td></tr></table></figure>
+
+<p>通过指令１，将攻击者本来不能得知的数据存入数组str中的某一项，在指令２中缓慢地将这一项的地址计算出来，抹去秘密数据。这样数据在architecture的层面上就没了痕迹，但是在microarchitectural的层面上留下了，这就是旁道攻击的原理。</p>
+<h3 id="PoC"><a href="#PoC" class="headerlink" title="PoC"></a>PoC</h3><p>我们即将展示几种攻击，包括硬件上的攻击和模拟器上的攻击。</p>
+<p>一般Spectre-like的攻击都是通过“训练”预测部件来使用wrong-path攻击，根据最初的spectre paper, 一般这个speculation window的大小平均能有100多条指令</p>
+<p>a. 攻击者和受害者通过一个probe array对一些共有资源竞争（原来不在covert channel）；<br>b. 攻击者训练(mistrain) BPU，使得它转跳到transmission gadgets处；</p>
+<p>一般硬件都比模拟器的策略更激进，比如在gem5 x86 o3处理器上，我们需要13次才能训练预测部件（BPU）转跳，在intel xeon和nuc上，只需要2次。</p>
+<p>一般来说，模拟器上的攻击比硬件上的更容易实现，因为：1. 噪音小; 2. 策略保守。但也有例外，比如store bypass (speculation windoｗ更小).</p>
+<h3 id="补丁-1"><a href="#补丁-1" class="headerlink" title="补丁"></a>补丁</h3><p>Spectre的软件补丁有很多，比如这个<a target="_blank" rel="noopener" href="https://lists.ubuntu.com/archives/kernel-team/2018-June/093096.html">Prevent speculation on user controlled pointer</a>. 但我认为在软件层面上的补丁对于spectre是不够的：首先，这是处理器设计上的问题，优雅的解决方法应该是更改设计，而不是没完没了地打补丁，就像我上面说的，潜在的旁道有很多。其次，目前的补丁问题也层出不穷，之前微软禁用了Intel的补丁，原因是补丁不稳定，会造成数据丢失、损坏和不必要的重启。</p>
+<p>对于Spectre v1，一个思路是对代码做静态检查，以确定可能受到攻击者控制以干扰推测的代码序列。易受攻击的代码序列可以插入fence指令（例如lfence），该指令可停止推测性执行，直到执行完栅栏的所有指令为止。插入围栏说明时必须小心，因为太多说明可能会对性能产生严重影响。 </p>
+<p>对于Spectre v2，补丁有retpoline, IBPB，STIBP: conditional, RSB filling等。这里简要介绍一下retpoline:</p>
+<p>ret指令的预测跟jmp和call不太一样，ret依赖于Return Stack Buffer(RSB)。跟indirect branch predictor不一样的是，RSB是一个 先进后出的stack。当执行call指令时，会push一项，执行ret时，会pop一项，这很容易收攻击者操纵。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">;before retpoline</span><br><span class="line">jmp *%rax</span><br><span class="line"></span><br><span class="line">;after retpoline</span><br><span class="line">	call load_label</span><br><span class="line">capture_ret_spec:</span><br><span class="line">	pause; lfence</span><br><span class="line">	jmp capture_ret_spec</span><br><span class="line">load_label:</span><br><span class="line">	mov %rax, (%rsp)</span><br><span class="line">	ret</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>“1: call load_label”这句话把”2: pause ; lfence”的地址压栈，当然也填充了RSB的一项，然后跳到load_label;</li>
+<li>“4: mov %rax, (%rsp)”，这里把间接跳转的地址(*%rax)直接放到了栈顶，注意，这个时候内存中的栈顶地址和RSB里面地址不一样了;</li>
+<li>如果这个时候ret CPU预测执行了，会使用第一步填充在RSB的地址进行，也就是”2: pause ; lfence”,这里是一个死循环;</li>
+<li>最后，CPU发现了内存栈上的返回地址跟RSB自己预测的地址不一样，所以，预测执行会终止，然后跳到*%rax。</li>
+</ol>
+<p>可想而知，retpoline的部署需要编译器的支持，最新的gcc已经支持了-mindirect-branch=thunk选项用于替换间接指令为retpoline系列。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在接下来一个CPU硬件周期 (7-10年)，Spectre和Meltdown将极大改变硬件和软件设计，研究人员会将旁道泄露的可能考虑进来。同时，Meltdown和Spectre的发现以及相关的补丁将在未来几年中对计算机用户产生重大影响。在短期内，补丁将对性能产生重大影响，具体取决于工作负载和特定硬件。这可能需要对某些基础架构进行操作更改。在我看来，最终解决预测攻击的方法还是一个新的ISA.</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="">Pipeline and out-of-order instruction execution optimize performance</a></p>
+<p><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E4%B9%B1%E5%BA%8F%E6%89%A7%E8%A1%8C">乱序执行</a> </p>
+<p><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/Tomasulo%E7%AE%97%E6%B3%95">Tomasulo算法</a> </p>
+<p><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%97%81%E8%B7%AF%E6%94%BB%E5%87%BB">旁路攻击</a> </p>
+<p><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/CPU%E7%BC%93%E5%AD%98">缓存</a> </p>
+<p><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E6%8E%A8%E6%B5%8B%E6%89%A7%E8%A1%8C">推测执行</a></p>
+<p><a target="_blank" rel="noopener" href="https://medium.com/@mattklein123/meltdown-spectre-explained-6bc8634cc0c2">The medium post</a> </p>
+<p><a target="_blank" rel="noopener" href="https://www.felixcloutier.com/x86/rdtscp">rdtscp()</a> </p>
+<p><a target="_blank" rel="noopener" href="https://meltdownattack.com/#faq-fix">Meltdown Attack FAQ</a> </p>
+<p><a target="_blank" rel="noopener" href="https://terenceli.github.io/%E6%8A%80%E6%9C%AF/2018/03/24/retpoline">retpoline: 原理与部署</a> </p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/eltsai/E-Tsai.github.io/tags/CN/" rel="tag"># CN</a>
+              <a href="/eltsai/E-Tsai.github.io/tags/systems/" rel="tag"># systems</a>
+              <a href="/eltsai/E-Tsai.github.io/tags/security/" rel="tag"># security</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/eltsai/E-Tsai.github.io/English-covers/" rel="prev" title="English Covers">
+      <i class="fa fa-chevron-left"></i> English Covers
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/eltsai/E-Tsai.github.io/Japanese-covers/" rel="next" title="日文翻唱">
+      日文翻唱 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%8D%E6%B1%87%E8%A7%A3%E9%87%8A"><span class="nav-number">1.</span> <span class="nav-text">词汇解释</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B9%B1%E5%BA%8F-out-of-order"><span class="nav-number">1.1.</span> <span class="nav-text">乱序 (out-of-order)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%81%E8%B7%AF%E6%94%BB%E5%87%BB-side-channel-attacks"><span class="nav-number">1.2.</span> <span class="nav-text">旁路攻击 (side-channel attacks)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98-virtual-memory"><span class="nav-number">1.3.</span> <span class="nav-text">虚拟内存 (virtual memory)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98-cache"><span class="nav-number">1.4.</span> <span class="nav-text">缓存 (cache)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%84%E6%B5%8B%E6%89%A7%E8%A1%8C-speculation-execution-attack"><span class="nav-number">1.5.</span> <span class="nav-text">预测执行 (speculation execution attack)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%86%94%E6%96%AD-Meltdown-%E6%B5%81%E6%B0%B4%E7%BA%BF%E5%B8%A6%E6%9D%A5%E7%9A%84%E6%8C%91%E6%88%98"><span class="nav-number">2.</span> <span class="nav-text">熔断 (Meltdown): 流水线带来的挑战</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%AA%E7%A0%81"><span class="nav-number">2.1.</span> <span class="nav-text">伪码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%A5%E4%B8%81"><span class="nav-number">2.2.</span> <span class="nav-text">补丁</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%BD%E7%81%B5"><span class="nav-number">3.</span> <span class="nav-text">幽灵</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%86%E7%B1%BB"><span class="nav-number">3.1.</span> <span class="nav-text">分类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Spectre-v1-%E4%BC%AA%E7%A0%81"><span class="nav-number">3.2.</span> <span class="nav-text">Spectre v1 伪码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Spectre-v2-%E8%A7%A3%E9%87%8A"><span class="nav-number">3.3.</span> <span class="nav-text">Spectre v2 解释</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Spectre-v4-%E8%A7%A3%E9%87%8A"><span class="nav-number">3.4.</span> <span class="nav-text">Spectre v4 解释</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PoC"><span class="nav-number">3.5.</span> <span class="nav-text">PoC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A1%A5%E4%B8%81-1"><span class="nav-number">3.6.</span> <span class="nav-text">补丁</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Elisa Tsai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/eltsai/E-Tsai.github.io/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/eltsai/E-Tsai.github.io/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/eltsai/E-Tsai.github.io/tags/">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/eltsai" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;eltsai"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/dumblelisapapernotes" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;dumblelisapapernotes" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Telegram</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://scholar.google.com/citations?user=3NA-OTQAAAAJ" title="Scholar → https:&#x2F;&#x2F;scholar.google.com&#x2F;citations?user&#x3D;3NA-OTQAAAAJ" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>Scholar</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.instagram.com/elisatdraws/" title="Instagram → https:&#x2F;&#x2F;www.instagram.com&#x2F;elisatdraws&#x2F;" rel="noopener" target="_blank"><i class="fab fa-instagram fa-fw"></i>Instagram</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Elisa Tsai</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/eltsai/E-Tsai.github.io/lib/anime.min.js"></script>
+  <script src="/eltsai/E-Tsai.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/eltsai/E-Tsai.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/eltsai/E-Tsai.github.io/js/utils.js"></script>
+
+<script src="/eltsai/E-Tsai.github.io/js/motion.js"></script>
+
+
+<script src="/eltsai/E-Tsai.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/eltsai/E-Tsai.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

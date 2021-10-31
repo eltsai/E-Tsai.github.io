@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/eltsai/E-Tsai.github.io/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/eltsai/E-Tsai.github.io/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/eltsai/E-Tsai.github.io/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/eltsai/E-Tsai.github.io/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/eltsai/E-Tsai.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/eltsai/E-Tsai.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"github.com","root":"/eltsai/E-Tsai.github.io/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="音频文件格式相关。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="音频格式：MP3, WAV的对比与实现">
+<meta property="og:url" content="https://github.com/eltsai/E-Tsai.github.io/music-format/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="音频文件格式相关。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img.shields.io/badge/Lan-CN-orange">
+<meta property="og:image" content="https://github.com/2018/07/19/music-format/sampling.jpg">
+<meta property="og:image" content="https://github.com/2018/07/19/music-format/algo.png">
+<meta property="article:published_time" content="2018-07-20T01:48:45.000Z">
+<meta property="article:modified_time" content="2021-10-30T15:38:41.340Z">
+<meta property="article:author" content="Elisa Tsai">
+<meta property="article:tag" content="music">
+<meta property="article:tag" content="CN">
+<meta property="article:tag" content="technics">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img.shields.io/badge/Lan-CN-orange">
+
+<link rel="canonical" href="https://github.com/eltsai/E-Tsai.github.io/music-format/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>音频格式：MP3, WAV的对比与实现 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/eltsai/E-Tsai.github.io/atom.xml" title="Hexo" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/eltsai/E-Tsai.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/eltsai/E-Tsai.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/eltsai/E-Tsai.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://github.com/eltsai/E-Tsai.github.io/music-format/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/eltsai/E-Tsai.github.io/images/avatar.gif">
+      <meta itemprop="name" content="Elisa Tsai">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          音频格式：MP3, WAV的对比与实现
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2018-07-19 21:48:45" itemprop="dateCreated datePublished" datetime="2018-07-19T21:48:45-04:00">2018-07-19</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-10-30 11:38:41" itemprop="dateModified" datetime="2021-10-30T11:38:41-04:00">2021-10-30</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/eltsai/E-Tsai.github.io/categories/CS/" itemprop="url" rel="index"><span itemprop="name">CS</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><img src="https://img.shields.io/badge/Lan-CN-orange"></p>
+<p>音频文件格式相关。</p>
+ <span id="more"></span>
+
+<h1 id="音频简介"><a href="#音频简介" class="headerlink" title="音频简介"></a>音频简介</h1><p><strong>一个mp3是320kbps，44100hz的，这是什么意思？</strong><br>44100Hz代表的是信号的采样率。<strong>所谓采样，就是每隔单位时间获取一次当前时刻声波的y值。采样是将连续的数据离散化的过程（将模拟信号转为数字信号）。</strong></p>
+<img src="/2018/07/19/music-format/sampling.jpg" class="" title="Sampling"> [图片来源](https://arstechnica.com/features/2007/09/the-audiofile-basicsof-uncompressed-digital-audio/)
+
+<p>以上提到的采样方法叫做PCM（脉冲编码调制，Pulse Code Modulation）。根据Nyquist-Shannon采样定律，采样率至少应该是你的目标最高频率的两倍。人耳的听觉范围大概是20Hz-20000Hz (如果你好奇自己能听见多高的声音的话，可以点击<a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=VxcbppCX6Rk">这里</a>测试你的耳朵) ，虽然录音软件常常也有48000hz的选项，但是我们可以安全地得出结论：44100Hz几乎可以满足我们所有的需求，更高的只不过在浪费你的内存和cpu。超过48000的采样对人耳已经没有意义，这和电影的每秒 24 帧图片的道理差不多。44100Hz恰好是几乎所有发行音乐的标准采样率。事实上，对于人声以及很多乐器来说，高频的声音是噪音，因而，高采样率有时会让你的音质变差（所以我们需要调整EQ）。</p>
+<p>320kbps代表着它的<strong>码率/比特率</strong>（bite rate），它是kilobits per second的缩写，代表着用来描述声音的数据大小。在CD（未经压缩的音频文件）里，码率为1411.2kbps，而达到CD音质的mp3音质应当高于128kbps / 44100Hz（128kbps可以说是最常见的比特率了）。 通常来说一个更大的数字代表着更好的品质。品质取决于很多因素（比如编码的算法）。很多时候我们不需太高的比特率：我们的设备播放出的mp3和CD可能并无区别（声卡/音响普通）。</p>
+<p>一个wav是44100Hz 16bit stereo 或者 22050Hz 8bit mono，这又是什么意思？stereo/mono指的是双/单声道。对于单声道声音文件，采样数据为八位的短整数（short int 00H-FFH）；而对于双声道立体声声音文件，每次采样数据为一个16位的整数（int），高八位(左声道)和低八位(右声道)分别代表两个声道。</p>
+<p>声音是一种机械波，由物体振动产生，需要介质来传播。所以，从本质上讲，声音就是一段时间轴上的波形。</p>
+<p>声音有三要素：<strong>音调、响度和音色</strong>：</p>
+<ul>
+<li>音调由声波的频率决定，频率越高音调越高。</li>
+<li>响度由声波的振幅决定，振幅越高响度越大。</li>
+<li>音色是由波形的“形”决定的（像方波，三角波，锯齿波这样的声音被称为脉冲波，它们声音单一）。</li>
+</ul>
+<p>一个音频文件，是将模拟信号转换为数字信号得到的文件。一般有5个重要参数：<strong>编码方式、声道数、采样率、位深、码率</strong>。</p>
+<ul>
+<li>编码方式：这个格式是怎么组织二进制数据的以及压缩方式等。</li>
+<li>声道数：单声道、双声道还是5.1声道等。</li>
+<li>采样率：每秒采样的次数。</li>
+<li>位深：用来存储采样点y值所使用的二进制位个数。</li>
+<li>比特率：该文件每秒的所需的二进制位个数。</li>
+</ul>
+<p>我们知道WAV格式是不存在压缩的，因此，它的编码方式就是直接把所有采样的点按顺序排列写到文件里。</p>
+<p>WAV文件大小 (B) = 声道数 * 采样率 (Hz) * 位深 (bit) / 8 + 文件头的大小 (B，是44B)</p>
+<h1 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h1><p> 当你使用文本编辑器打开mp3或是wav文件，你看到的是这样的数字：<br> <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">4944 3303 0000 0000 3d48 5459 4552 0000</span><br><span class="line">0006 0000 0032 3031 3800 5444 4154 0000</span><br><span class="line">0006 0000 0032 3230 3300 5449 4d45 0000</span><br><span class="line">0006 0000 0031 3430 3600 5052 4956 0000</span><br><span class="line">168e 0000 584d 5000 3c3f 7870 6163 6b65</span><br><span class="line">7420 6265 6769 6e3d 22ef bbbf 2220 6964</span><br><span class="line">3d22 5735 4d30 4d70 4365 6869 487a 7265</span><br><span class="line">537a 4e54 637a 6b63 3964 223f 3e0a 3c78</span><br><span class="line">3a78 6d70 6d65 7461 2078 6d6c 6e73 3a78</span><br><span class="line">3d22 6164 6f62 653a 6e73 3a6d 6574 612f</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">5249 4646 2e3d 0e05 5741 5645 666d 7420</span><br><span class="line">1200 0000 0300 0200 44ac 0000 2062 0500</span><br><span class="line">0800 2000 0000 6461 7461 a026 0e05 8089</span><br><span class="line">00bc 00e8 f0bb c09e 8dbc 00c2 87bc 80f1</span><br><span class="line">d3bc 8063 ccbc c030 fcbc 8012 f4bc 20bb</span><br><span class="line">13bd e051 0fbd c0b0 2dbd 6079 28bd 4012</span><br><span class="line">46bd 6032 40bd c0e3 5dbd 6040 57bd c015</span><br><span class="line">7cbd e035 74bd b058 8dbd 50e2 88bd f0a7</span><br><span class="line">9dbd e0dd 98bd 70d3 acbd e0a9 a7bd d043</span><br><span class="line">b8bd b0da b2bd 00e3 c4bd 605c bfbd a03d</span><br></pre></td></tr></table></figure>
+<p>这上面是同一首歌的mp3/wav格式。它们的区别在哪里？</p>
+<h2 id="WAV"><a href="#WAV" class="headerlink" title="WAV"></a>WAV</h2><h3 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h3><h4 id="文件头"><a href="#文件头" class="headerlink" title="文件头"></a>文件头</h4><p>WAV格式遵循<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/zh-cn/%E8%B5%84%E6%BA%90%E4%BA%A4%E6%8D%A2%E6%A1%A3%E6%A1%88%E6%A0%BC%E5%BC%8F">RIFF资源交换档案格式</a>，所以WAV格式其实是一个三层关系，这里简化了一下，它的文件头格式如下表：</p>
+<table>
+<thead>
+<tr>
+<th>地址</th>
+<th>大小</th>
+<th>类型</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>00H-03H</td>
+<td>4</td>
+<td>char*4</td>
+<td>资源文件交换标志RIFF</td>
+</tr>
+<tr>
+<td>04H-07H</td>
+<td>4</td>
+<td>unsigned int</td>
+<td>从下个地址开始到文件末尾的字节数</td>
+</tr>
+<tr>
+<td>08H-0BH</td>
+<td>4</td>
+<td>char*4</td>
+<td>WAV文件标志WAVE</td>
+</tr>
+<tr>
+<td>0CH-0FH</td>
+<td>4</td>
+<td>char*4</td>
+<td>波形文件标志fmt ，最后一位是0x20空格</td>
+</tr>
+<tr>
+<td>10H-13H</td>
+<td>4</td>
+<td>unsigned int</td>
+<td>子Chunk的文件头大小，对于WAV这个子Chunk该值为0x10</td>
+</tr>
+<tr>
+<td>14H-15H</td>
+<td>2</td>
+<td>unsigned short</td>
+<td>格式类型，值为1时，表示数据为线性PCM编码</td>
+</tr>
+<tr>
+<td>16H-17H</td>
+<td>2</td>
+<td>unsigned short</td>
+<td>声道数</td>
+</tr>
+<tr>
+<td>18H-1BH</td>
+<td>4</td>
+<td>unsigned int</td>
+<td>采样频率</td>
+</tr>
+<tr>
+<td>1CH-1FH</td>
+<td>4</td>
+<td>unsigned int</td>
+<td>波形文件每秒的字节数=采样率<em>PCM位深/8</em>声道数</td>
+</tr>
+<tr>
+<td>20H-21H</td>
+<td>2</td>
+<td>unsigned short</td>
+<td>DATA数据块单位长度=声道数*PCM位深/8</td>
+</tr>
+<tr>
+<td>22H-23H</td>
+<td>2</td>
+<td>unsigned short</td>
+<td>PCM位深</td>
+</tr>
+<tr>
+<td>24H-27H</td>
+<td>4</td>
+<td>char*4</td>
+<td>数据标志data</td>
+</tr>
+<tr>
+<td>28H-2BH</td>
+<td>4</td>
+<td>unsigned int</td>
+<td>数据部分总长度（字节数）</td>
+</tr>
+</tbody></table>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">WAVHeader</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">char</span> RIFF[<span class="number">4</span>]; <span class="comment">///资源文件交换标志RIFF</span></span><br><span class="line">    <span class="keyword">unsigned</span> LEN; <span class="comment">///从下个地址开始到文件末尾的字节数</span></span><br><span class="line">    <span class="keyword">char</span> WAV[<span class="number">4</span>]; <span class="comment">///WAV文件标志WAVE</span></span><br><span class="line">    <span class="keyword">char</span> FMT[<span class="number">4</span>]; <span class="comment">///波形文件标志fmt ，最后一位是0x20空格</span></span><br><span class="line">    <span class="keyword">unsigned</span> SubchunkSize; <span class="comment">///子Chunk的文件头大小，对于WAV这个子Chunk该值为0x10</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">short</span> DATATYPE; <span class="comment">///格式类型，值为1时，表示数据为线性PCM编码</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">short</span> CH; <span class="comment">///声道数</span></span><br><span class="line">    <span class="keyword">unsigned</span> F; <span class="comment">///采样频率</span></span><br><span class="line">    <span class="keyword">unsigned</span> BYTERATE; <span class="comment">///波形文件每秒的字节数=采样率*PCM位深/8*声道数</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">short</span> DATAUNITLEN; <span class="comment">///DATA数据块单位长度=声道数*PCM位深/8</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">short</span> BITDEPTH; <span class="comment">///PCM位深</span></span><br><span class="line">    <span class="keyword">char</span> DATA[<span class="number">4</span>]; <span class="comment">///数据标志data</span></span><br><span class="line">    <span class="keyword">unsigned</span> DATALEN; <span class="comment">///数据部分总长度（字节数）</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="数据组织方式"><a href="#数据组织方式" class="headerlink" title="数据组织方式"></a>数据组织方式</h4><p>在文件头之后，就是WAV文件的数据部分了。它的数据组织方式是：第一个采样点的左声道值，第一个采样点的右声道值，……，最后一个采样点的左声道值，最后一个采样点的右声道值。每一个值都有位深个比特。</p>
+<h3 id="生成一段简易wav"><a href="#生成一段简易wav" class="headerlink" title="生成一段简易wav"></a>生成一段简易wav</h3><p>首先将Wav Header填写好。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">WAVHeader <span class="title">getHeader</span><span class="params">(<span class="keyword">int</span> num)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    WAVHeader res;</span><br><span class="line">    <span class="built_in">memcpy</span>(res.RIFF,<span class="string">&quot;RIFF&quot;</span>,<span class="keyword">sizeof</span>(res.RIFF));</span><br><span class="line">    <span class="built_in">memcpy</span>(res.WAV,<span class="string">&quot;WAVE&quot;</span>,<span class="keyword">sizeof</span>(res.WAV));</span><br><span class="line">    <span class="built_in">memcpy</span>(res.FMT,<span class="string">&quot;fmt &quot;</span>,<span class="keyword">sizeof</span>(res.FMT));</span><br><span class="line">    res.SubchunkSize=<span class="number">0x10</span>;</span><br><span class="line">    res.DATATYPE=<span class="number">1</span>;</span><br><span class="line">    res.CH=<span class="number">2</span>;</span><br><span class="line">    res.F=F;</span><br><span class="line">    res.BITDEPTH=DEPTH;</span><br><span class="line">    res.BYTERATE=res.F*res.BITDEPTH/<span class="number">8</span>*res.CH;</span><br><span class="line">    res.DATAUNITLEN=res.CH*res.BITDEPTH/<span class="number">8</span>;</span><br><span class="line">    <span class="built_in">memcpy</span>(res.DATA,<span class="string">&quot;data&quot;</span>,<span class="keyword">sizeof</span>(res.DATA));</span><br><span class="line">    res.DATALEN=num*res.DATAUNITLEN;</span><br><span class="line">    res.LEN=res.DATALEN+<span class="number">44</span><span class="number">-8</span>;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先，定义键名——频率对照表。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">double</span> keyf[]=</span><br><span class="line">&#123;</span><br><span class="line">    <span class="number">27.5</span>,<span class="number">29.1352</span>,<span class="number">30.8677</span>,</span><br><span class="line">    <span class="number">32.7032</span>,<span class="number">34.6478</span>,<span class="number">36.7081</span>,<span class="number">38.8909</span>,<span class="number">41.2034</span>,<span class="number">43.6535</span>,<span class="number">46.2493</span>,<span class="number">48.9994</span>,<span class="number">51.9131</span>,<span class="number">55</span>,<span class="number">58.2705</span>,<span class="number">61.7354</span>,</span><br><span class="line">    <span class="number">65.4064</span>,<span class="number">69.2957</span>,<span class="number">73.4162</span>,<span class="number">77.7817</span>,<span class="number">82.4069</span>,<span class="number">87.3071</span>,<span class="number">92.4986</span>,<span class="number">97.9989</span>,<span class="number">103.826</span>,<span class="number">110</span>,<span class="number">116.541</span>,<span class="number">123.471</span>,</span><br><span class="line">    <span class="number">130.813</span>,<span class="number">138.591</span>,<span class="number">146.832</span>,<span class="number">155.563</span>,<span class="number">164.814</span>,<span class="number">174.614</span>,<span class="number">184.997</span>,<span class="number">195.998</span>,<span class="number">207.652</span>,<span class="number">220</span>,<span class="number">233.082</span>,<span class="number">246.942</span>,</span><br><span class="line">    <span class="number">261.626</span>,<span class="number">277.183</span>,<span class="number">293.665</span>,<span class="number">311.127</span>,<span class="number">329.628</span>,<span class="number">349.228</span>,<span class="number">369.994</span>,<span class="number">391.995</span>,<span class="number">415.305</span>,<span class="number">440</span>,<span class="number">466.164</span>,<span class="number">493.883</span>,</span><br><span class="line">    <span class="number">523.251</span>,<span class="number">554.365</span>,<span class="number">587.33</span>,<span class="number">622.254</span>,<span class="number">659.255</span>,<span class="number">698.456</span>,<span class="number">739.989</span>,<span class="number">783.991</span>,<span class="number">830.609</span>,<span class="number">880</span>,<span class="number">932.328</span>,<span class="number">987.767</span>,</span><br><span class="line">    <span class="number">1046.5</span>,<span class="number">1108.73</span>,<span class="number">1174.66</span>,<span class="number">1244.51</span>,<span class="number">1318.51</span>,<span class="number">1396.91</span>,<span class="number">1479.98</span>,<span class="number">1567.98</span>,<span class="number">1661.22</span>,<span class="number">1760</span>,<span class="number">1864.66</span>,<span class="number">1975.53</span>,</span><br><span class="line">    <span class="number">2093</span>,<span class="number">2217.46</span>,<span class="number">2349.32</span>,<span class="number">2489.02</span>,<span class="number">2637.02</span>,<span class="number">2793.83</span>,<span class="number">2959.96</span>,<span class="number">3135.96</span>,<span class="number">3322.44</span>,<span class="number">3520</span>,<span class="number">3729.31</span>,<span class="number">3951.07</span>,</span><br><span class="line">    <span class="number">4186.01</span></span><br><span class="line">&#125;; <span class="comment">///钢琴88键的频率表，按八度划分（十二平均律）</span></span><br><span class="line">string keyname[]=</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;A-0&quot;</span>,<span class="string">&quot;A#0&quot;</span>,<span class="string">&quot;B-0&quot;</span>,</span><br><span class="line">    <span class="string">&quot;C-1&quot;</span>,<span class="string">&quot;C#1&quot;</span>,<span class="string">&quot;D-1&quot;</span>,<span class="string">&quot;D#1&quot;</span>,<span class="string">&quot;E-1&quot;</span>,<span class="string">&quot;F-1&quot;</span>,<span class="string">&quot;F#1&quot;</span>,<span class="string">&quot;G-1&quot;</span>,<span class="string">&quot;G#1&quot;</span>,<span class="string">&quot;A-1&quot;</span>,<span class="string">&quot;A#1&quot;</span>,<span class="string">&quot;B-1&quot;</span>,</span><br><span class="line">    <span class="string">&quot;C-2&quot;</span>,<span class="string">&quot;C#2&quot;</span>,<span class="string">&quot;D-2&quot;</span>,<span class="string">&quot;D#2&quot;</span>,<span class="string">&quot;E-2&quot;</span>,<span class="string">&quot;F-2&quot;</span>,<span class="string">&quot;F#2&quot;</span>,<span class="string">&quot;G-2&quot;</span>,<span class="string">&quot;G#2&quot;</span>,<span class="string">&quot;A-2&quot;</span>,<span class="string">&quot;A#2&quot;</span>,<span class="string">&quot;B-2&quot;</span>,</span><br><span class="line">    <span class="string">&quot;C-3&quot;</span>,<span class="string">&quot;C#3&quot;</span>,<span class="string">&quot;D-3&quot;</span>,<span class="string">&quot;D#3&quot;</span>,<span class="string">&quot;E-3&quot;</span>,<span class="string">&quot;F-3&quot;</span>,<span class="string">&quot;F#3&quot;</span>,<span class="string">&quot;G-3&quot;</span>,<span class="string">&quot;G#3&quot;</span>,<span class="string">&quot;A-3&quot;</span>,<span class="string">&quot;A#3&quot;</span>,<span class="string">&quot;B-3&quot;</span>,</span><br><span class="line">    <span class="string">&quot;C-4&quot;</span>,<span class="string">&quot;C#4&quot;</span>,<span class="string">&quot;D-4&quot;</span>,<span class="string">&quot;D#4&quot;</span>,<span class="string">&quot;E-4&quot;</span>,<span class="string">&quot;F-4&quot;</span>,<span class="string">&quot;F#4&quot;</span>,<span class="string">&quot;G-4&quot;</span>,<span class="string">&quot;G#4&quot;</span>,<span class="string">&quot;A-4&quot;</span>,<span class="string">&quot;A#4&quot;</span>,<span class="string">&quot;B-4&quot;</span>,</span><br><span class="line">    <span class="string">&quot;C-5&quot;</span>,<span class="string">&quot;C#5&quot;</span>,<span class="string">&quot;D-5&quot;</span>,<span class="string">&quot;D#5&quot;</span>,<span class="string">&quot;E-5&quot;</span>,<span class="string">&quot;F-5&quot;</span>,<span class="string">&quot;F#5&quot;</span>,<span class="string">&quot;G-5&quot;</span>,<span class="string">&quot;G#5&quot;</span>,<span class="string">&quot;A-5&quot;</span>,<span class="string">&quot;A#5&quot;</span>,<span class="string">&quot;B-5&quot;</span>,</span><br><span class="line">    <span class="string">&quot;C-6&quot;</span>,<span class="string">&quot;C#6&quot;</span>,<span class="string">&quot;D-6&quot;</span>,<span class="string">&quot;D#6&quot;</span>,<span class="string">&quot;E-6&quot;</span>,<span class="string">&quot;F-6&quot;</span>,<span class="string">&quot;F#6&quot;</span>,<span class="string">&quot;G-6&quot;</span>,<span class="string">&quot;G#6&quot;</span>,<span class="string">&quot;A-6&quot;</span>,<span class="string">&quot;A#6&quot;</span>,<span class="string">&quot;B-6&quot;</span>,</span><br><span class="line">    <span class="string">&quot;C-7&quot;</span>,<span class="string">&quot;C#7&quot;</span>,<span class="string">&quot;D-7&quot;</span>,<span class="string">&quot;D#7&quot;</span>,<span class="string">&quot;E-7&quot;</span>,<span class="string">&quot;F-7&quot;</span>,<span class="string">&quot;F#7&quot;</span>,<span class="string">&quot;G-7&quot;</span>,<span class="string">&quot;G#7&quot;</span>,<span class="string">&quot;A-7&quot;</span>,<span class="string">&quot;A#7&quot;</span>,<span class="string">&quot;B-7&quot;</span>,</span><br><span class="line">    <span class="string">&quot;C-8&quot;</span></span><br><span class="line">&#125;;</span><br><span class="line">string noisename[]=</span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;0-#&quot;</span>,<span class="string">&quot;1-#&quot;</span>,<span class="string">&quot;2-#&quot;</span>,<span class="string">&quot;3-#&quot;</span>,<span class="string">&quot;4-#&quot;</span>,<span class="string">&quot;5-#&quot;</span>,<span class="string">&quot;6-#&quot;</span>,<span class="string">&quot;7-#&quot;</span>,<span class="string">&quot;8-#&quot;</span>,<span class="string">&quot;9-#&quot;</span>,<span class="string">&quot;A-#&quot;</span>,<span class="string">&quot;B-#&quot;</span>,<span class="string">&quot;C-#&quot;</span>,<span class="string">&quot;D-#&quot;</span>,<span class="string">&quot;E-#&quot;</span>,<span class="string">&quot;F-#&quot;</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这里是声音频率与键名的对照表，你可以看到大名鼎鼎的A4(440hz)。我一年前的FPGA实验写的是键盘电子琴，其实这两个做的都是一样的事。我想起当时我试图用一个蜂鸣器发出多个声音，并没有成功（最后还是给左手/右手各分配了一个蜂鸣器），在看了这个<a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=q_3d1x2VPxk">How Oldschool Sound/Music worked</a>之后我意识到这也许是可以做到的，（但是也许）需要傅里叶。</p>
+<p>说到傅里叶，我在看关于mp3压缩的算法时看到了FFT，意识到我遇到过的噪音消除都用的是FFT算法（Cool Edit提取的噪声文件似乎就是.fft？我感觉这个值得一篇单独的博文）。<br>定义一些常量：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> F=<span class="number">48000</span>; <span class="comment">///音乐采样率，单位Hz</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> DEPTH=<span class="number">16</span>; <span class="comment">///音乐位深</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> LVL=(<span class="number">1</span>&lt;&lt;<span class="number">14</span>)<span class="number">-1</span>; <span class="comment">///max volume, 4 ch * LVL &lt; unsigned short</span></span><br><span class="line">map&lt;string,<span class="keyword">int</span>&gt; nametokey;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">double</span> SecondPerKey=<span class="number">0.065</span>; <span class="comment">///每个音符的持续时间</span></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> S=F*SecondPerKey; <span class="comment">///每个音符需要的采样点个数</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">short</span> levelval; <span class="comment">///位深为16所以使用short</span></span><br></pre></td></tr></table></figure>
+<p>下面是生成方波、三角波、噪声波的函数:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">///给定时间t，不同波形的值</span></span><br><span class="line"><span class="function">levelval <span class="title">getPulse</span><span class="params">(<span class="keyword">int</span> key,<span class="keyword">double</span> t)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">double</span> T=<span class="number">1</span>/keyf[key];</span><br><span class="line">    <span class="keyword">double</span> percent=<span class="built_in">fmod</span>(t,T)/T;</span><br><span class="line">    <span class="keyword">if</span> (percent&lt;<span class="number">0.5</span>) <span class="keyword">return</span> LVL;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">levelval <span class="title">getTriangle</span><span class="params">(<span class="keyword">int</span> key,<span class="keyword">double</span> t)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">double</span> T=<span class="number">1</span>/keyf[key];</span><br><span class="line">    <span class="keyword">double</span> percent=<span class="built_in">fmod</span>(t,T)/T;</span><br><span class="line">    <span class="keyword">if</span> (percent&lt;<span class="number">0.5</span>) <span class="keyword">return</span> LVL*percent;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">return</span> LVL*(<span class="number">1</span>-percent);</span><br><span class="line">&#125;</span><br><span class="line">levelval rnd[<span class="number">50005</span>];</span><br><span class="line"><span class="function">levelval <span class="title">getNoise</span><span class="params">(<span class="keyword">int</span> key,<span class="keyword">double</span> t)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">double</span> T=<span class="number">1</span>/keyf[key];</span><br><span class="line">    <span class="keyword">double</span> percent=<span class="built_in">fmod</span>(t,T)/T;</span><br><span class="line">    <span class="keyword">if</span> (percent&lt;rnd[(<span class="keyword">int</span>)(percent*S)]*<span class="number">1.0</span>/LVL) <span class="keyword">return</span> rnd[(<span class="keyword">int</span>)(percent*S)];</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">getWave</span><span class="params">(<span class="keyword">int</span> type,<span class="keyword">int</span> key,levelval res[],<span class="keyword">int</span> vol=<span class="number">15</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">levelval</span> (*f[])(<span class="keyword">int</span>,<span class="keyword">double</span>)= &#123;getPulse,getPulse,getTriangle,getNoise&#125;;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;S; i++)</span><br><span class="line">        res[i]=f[type](key,i*<span class="number">1.0</span>/F)*<span class="number">1.0</span>*vol/<span class="number">15</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用二进制方式读写文件，使用fwrite进行二进制输出。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">FILE *fp=<span class="built_in">fopen</span>(<span class="string">&quot;test.wav&quot;</span>,<span class="string">&quot;wb&quot;</span>);</span><br><span class="line">WAVHeader header=<span class="built_in">getHeader</span>(num);</span><br><span class="line"><span class="built_in">fwrite</span>(&amp;header,<span class="built_in"><span class="keyword">sizeof</span></span>(header),<span class="number">1</span>,fp);</span><br></pre></td></tr></table></figure>
+
+<h2 id="MP3"><a href="#MP3" class="headerlink" title="MP3"></a>MP3</h2><p>尽管有许多创造和推广其他格式的重要努力，如 MPEG 标准中的 AAC（Advanced Audio Coding）和 Xiph.Org 开源无专利的 Vorbis. MP3 (MPEG-1 Audio Layer3)，这种来自德国的音频格式，仍然是最被人熟知的。<br>一个MP3文件分为3部分：TAG_V2(ID3V2)，Frame, TAG_V1(ID3V1).</p>
+<table>
+<thead>
+<tr>
+<th>MP3</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ID3V2</td>
+<td>包含作曲，专辑等信息，长度不固定，ID3V1的扩展</td>
+</tr>
+<tr>
+<td>Frame</td>
+<td>一系列的帧，个数和帧长不固定</td>
+</tr>
+<tr>
+<td>ID3V1</td>
+<td>包含作者，作曲，专辑等信息，长度为128byte</td>
+</tr>
+</tbody></table>
+<h3 id="结构-1"><a href="#结构-1" class="headerlink" title="结构"></a>结构</h3><h4 id="ID3V2"><a href="#ID3V2" class="headerlink" title="ID3V2"></a>ID3V2</h4><p>ID3V2存放在MP3文件的首部，由1个标签头和若干标签帧组成。</p>
+<p>标签头为10个字节，</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> Header[<span class="number">3</span>];          <span class="comment">/*必须为&quot;ID3&quot;否则认为标签不存在*/</span></span><br><span class="line"><span class="keyword">char</span> Ver;                <span class="comment">/*版本号ID3V2.3 就记录3*/</span></span><br><span class="line"><span class="keyword">char</span> Revision;            <span class="comment">/*副版本号此版本记录为0*/</span></span><br><span class="line"><span class="keyword">char</span> Flag;               <span class="comment">/*存放标志的字节，这个版本只定义了三位，稍后详细解说*/</span></span><br><span class="line"><span class="keyword">char</span> Size[<span class="number">4</span>];             <span class="comment">/*标签大小，包括标签头的10 个字节和所有的标签帧的大小*/</span></span><br></pre></td></tr></table></figure>
+<p>每个标签帧都有一个10个字节的帧头和至少一个字节的不固定长度的内容组成为，帧头的定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> FrameID[<span class="number">4</span>];    <span class="comment">/*用四个字符标识一个帧，说明其内容，稍后有常用的标识对照表*/</span></span><br><span class="line"><span class="keyword">char</span> Size[<span class="number">4</span>];         <span class="comment">/*帧内容的大小，不包括帧头，不得小于1*/</span></span><br><span class="line"><span class="keyword">char</span> Flags[<span class="number">2</span>];        <span class="comment">/*存放标志，只定义了6 位，稍后详细解说*/</span></span><br></pre></td></tr></table></figure>
+<h4 id="Frame"><a href="#Frame" class="headerlink" title="Frame"></a>Frame</h4><p>帧的个数由文件大小和帧长决定，每个帧的长度可能固定，由码率决定。一个帧分为帧头和数据实体两部分，帧头记录了mp3的码率，采样率，版本等信息，帧之间相互独立。</p>
+<table>
+<thead>
+<tr>
+<th>Frame格式</th>
+<th>大小</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FRAMEHEADER</td>
+<td>4 byte</td>
+</tr>
+<tr>
+<td>CRC(free)</td>
+<td>0/2 byte</td>
+</tr>
+<tr>
+<td>MAIN_DATA</td>
+<td>由frame header计算得出</td>
+</tr>
+</tbody></table>
+<h4 id="ID3V1格式"><a href="#ID3V1格式" class="headerlink" title="ID3V1格式"></a>ID3V1格式</h4><p>ID3V1存放在MP3文件结尾，共128bytes，各项信息都顺序存放，不足部分使用‘\0’补足。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">tagID3V1</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">char</span> Header[<span class="number">3</span>]; <span class="comment">/*标签头必须是&quot;TAG&quot;否则认为没有标签*/</span></span><br><span class="line"><span class="keyword">char</span> Title[<span class="number">30</span>]; <span class="comment">/*标题*/</span></span><br><span class="line"><span class="keyword">char</span> Artist[<span class="number">30</span>]; <span class="comment">/*作者*/</span></span><br><span class="line"><span class="keyword">char</span> Album[<span class="number">30</span>]; <span class="comment">/*专集*/</span></span><br><span class="line"><span class="keyword">char</span> Year[<span class="number">4</span>]; <span class="comment">/*出品年代*/</span></span><br><span class="line"><span class="keyword">char</span> Comment[<span class="number">28</span>]; <span class="comment">/*备注*/</span></span><br><span class="line"><span class="keyword">char</span> reserve; <span class="comment">/*保留*/</span></span><br><span class="line"><span class="keyword">char</span> track;; <span class="comment">/*音轨*/</span></span><br><span class="line"><span class="keyword">char</span> Genre; <span class="comment">/*类型*/</span></span><br><span class="line"></span><br><span class="line">&#125;ID3V1,*pID3V1;</span><br></pre></td></tr></table></figure>
+<h3 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h3><p>MP3的首尾都是标记身份的信息，中间的frame则是音频的编码。MP3运用心理学声（Psychoacoustic, 将人类听觉范围外的声音舍弃；simultaneous masking: 如果同时有强声&amp;弱声，舍弃弱声）等技术，舍弃了脉冲编码调制 (PCM) 的音频中对人类听觉不重要的数据。它的前身MP2，来源于为EUREKA (就是阿基里德从浴盆里跳出来的时候大喊的那个eureka) 项目资助的数字音频广播项目DAB. MP2的压缩率大概在6:1 ~ 8:1，但当时的计算机硬盘普遍只有500MB，这样的音频还是略显奢侈了。而MP3可以将一个完整的音乐文件压缩到原件的8%，权衡了数据大小和音质质量。</p>
+<img src="/2018/07/19/music-format/algo.png" class="" title="Sampling">
+
+<p>关于编码的详情在资料的[5], [6].</p>
+<p>一点无关的东西：由于CD介质的Tom’s Diner (Suzanne Vega)柔和，旋律简单，因此容易听到压缩格式的缺陷，发明者布兰登堡便使用这首歌来评价MP3算法的优劣。因而，有人开玩笑地称Suzanne Vega为“MP3之母”。出于好奇，我查了一下这首歌，和Fall Out Boys的Centuries开头简直一模一样，可能是某种致敬。</p>
+<h1 id="资料来源"><a href="#资料来源" class="headerlink" title="资料来源"></a>资料来源</h1><p> [1]<a target="_blank" rel="noopener" href="https://blog.csdn.net/xiahouzuoxin/article/details/7849249">mp3编码分析</a><br> [2]<a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/MP3">mp3维基</a><br> [3]<a target="_blank" rel="noopener" href="https://fanzheng.org/archives/37">wav格式详解</a><br> [4]<a target="_blank" rel="noopener" href="https://fanzheng.org/archives/36">声音的产生与数字化</a><br> [5]<a target="_blank" rel="noopener" href="https://blog.csdn.net/ffmpeg4976/article/details/46943585">MP3压缩算法</a><br> [6]<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/58df71a19901">MP3解码算法原理解析</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/eltsai/E-Tsai.github.io/tags/music/" rel="tag"># music</a>
+              <a href="/eltsai/E-Tsai.github.io/tags/CN/" rel="tag"># CN</a>
+              <a href="/eltsai/E-Tsai.github.io/tags/technics/" rel="tag"># technics</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/eltsai/E-Tsai.github.io/in-an-uncertain-world/" rel="prev" title="在一个不确定的世界里">
+      <i class="fa fa-chevron-left"></i> 在一个不确定的世界里
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/eltsai/E-Tsai.github.io/guide/" rel="next" title="Hi There">
+      Hi There <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9F%B3%E9%A2%91%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">音频简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">具体实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#WAV"><span class="nav-number">2.1.</span> <span class="nav-text">WAV</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%84"><span class="nav-number">2.1.1.</span> <span class="nav-text">结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E5%A4%B4"><span class="nav-number">2.1.1.1.</span> <span class="nav-text">文件头</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E6%96%B9%E5%BC%8F"><span class="nav-number">2.1.1.2.</span> <span class="nav-text">数据组织方式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E4%B8%80%E6%AE%B5%E7%AE%80%E6%98%93wav"><span class="nav-number">2.1.2.</span> <span class="nav-text">生成一段简易wav</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MP3"><span class="nav-number">2.2.</span> <span class="nav-text">MP3</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%84-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#ID3V2"><span class="nav-number">2.2.1.1.</span> <span class="nav-text">ID3V2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Frame"><span class="nav-number">2.2.1.2.</span> <span class="nav-text">Frame</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ID3V1%E6%A0%BC%E5%BC%8F"><span class="nav-number">2.2.1.3.</span> <span class="nav-text">ID3V1格式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E7%A0%81"><span class="nav-number">2.2.2.</span> <span class="nav-text">编码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B5%84%E6%96%99%E6%9D%A5%E6%BA%90"><span class="nav-number">3.</span> <span class="nav-text">资料来源</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Elisa Tsai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/eltsai/E-Tsai.github.io/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/eltsai/E-Tsai.github.io/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/eltsai/E-Tsai.github.io/tags/">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/eltsai" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;eltsai"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/dumblelisapapernotes" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;dumblelisapapernotes" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Telegram</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://scholar.google.com/citations?user=3NA-OTQAAAAJ" title="Scholar → https:&#x2F;&#x2F;scholar.google.com&#x2F;citations?user&#x3D;3NA-OTQAAAAJ" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>Scholar</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.instagram.com/elisatdraws/" title="Instagram → https:&#x2F;&#x2F;www.instagram.com&#x2F;elisatdraws&#x2F;" rel="noopener" target="_blank"><i class="fab fa-instagram fa-fw"></i>Instagram</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Elisa Tsai</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/eltsai/E-Tsai.github.io/lib/anime.min.js"></script>
+  <script src="/eltsai/E-Tsai.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/eltsai/E-Tsai.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/eltsai/E-Tsai.github.io/js/utils.js"></script>
+
+<script src="/eltsai/E-Tsai.github.io/js/motion.js"></script>
+
+
+<script src="/eltsai/E-Tsai.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/eltsai/E-Tsai.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

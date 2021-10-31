@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/eltsai/E-Tsai.github.io/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/eltsai/E-Tsai.github.io/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/eltsai/E-Tsai.github.io/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/eltsai/E-Tsai.github.io/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/eltsai/E-Tsai.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/eltsai/E-Tsai.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"github.com","root":"/eltsai/E-Tsai.github.io/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="这是一个linux内核补丁提交教程，其中有不少内容来自Kernel Newbies，也有部分自己创作的。书籍推荐: Linux Device Drivers">
+<meta property="og:type" content="article">
+<meta property="og:title" content="你的第一个Linux内核补丁">
+<meta property="og:url" content="https://github.com/eltsai/E-Tsai.github.io/your-first-linux-kernel-patch/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="这是一个linux内核补丁提交教程，其中有不少内容来自Kernel Newbies，也有部分自己创作的。书籍推荐: Linux Device Drivers">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img.shields.io/badge/Lan-CN-orange">
+<meta property="article:published_time" content="2019-04-18T14:17:15.000Z">
+<meta property="article:modified_time" content="2021-10-30T15:38:41.340Z">
+<meta property="article:author" content="Elisa Tsai">
+<meta property="article:tag" content="CN">
+<meta property="article:tag" content="systems">
+<meta property="article:tag" content="technics">
+<meta property="article:tag" content="translated">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img.shields.io/badge/Lan-CN-orange">
+
+<link rel="canonical" href="https://github.com/eltsai/E-Tsai.github.io/your-first-linux-kernel-patch/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>你的第一个Linux内核补丁 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/eltsai/E-Tsai.github.io/atom.xml" title="Hexo" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/eltsai/E-Tsai.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/eltsai/E-Tsai.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/eltsai/E-Tsai.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://github.com/eltsai/E-Tsai.github.io/your-first-linux-kernel-patch/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/eltsai/E-Tsai.github.io/images/avatar.gif">
+      <meta itemprop="name" content="Elisa Tsai">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          你的第一个Linux内核补丁
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2019-04-18 10:17:15" itemprop="dateCreated datePublished" datetime="2019-04-18T10:17:15-04:00">2019-04-18</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-10-30 11:38:41" itemprop="dateModified" datetime="2021-10-30T11:38:41-04:00">2021-10-30</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/eltsai/E-Tsai.github.io/categories/CS/" itemprop="url" rel="index"><span itemprop="name">CS</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><img src="https://img.shields.io/badge/Lan-CN-orange"></p>
+<p>这是一个linux内核补丁提交教程，其中有不少内容来自<a target="_blank" rel="noopener" href="https://kernelnewbies.org/">Kernel Newbies</a>，也有部分自己创作的。<br>书籍推荐: <a target="_blank" rel="noopener" href="https://lwn.net/Kernel/LDD3/">Linux Device Drivers</a></p>
+<span id="more"></span>
+<h2 id="环境配置-amp-初步编译"><a href="#环境配置-amp-初步编译" class="headerlink" title="环境配置&amp;初步编译"></a>环境配置&amp;初步编译</h2><h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>这个教程的目的是教会你提交linux内核补丁 (patch)。为了成功编译linux kernel，你需要准备好以下工具：</p>
+<p>Ubuntu/Debian:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install vim libncurses5-dev gcc make git exuberant-ctags libssl-dev bison flex libelf-dev bc</span><br></pre></td></tr></table></figure>
+
+<p>ArchLinux/Manjaro:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo pacman -S vim gcc make git ctags openssl bison flex libelf bc</span><br></pre></td></tr></table></figure>
+<p>至此你已经安装好: vim, gcc, make, git, ncurses, libssl, bison, flex, libelf和bc.</p>
+<h3 id="建立你的Linux-Kernel仓库"><a href="#建立你的Linux-Kernel仓库" class="headerlink" title="建立你的Linux Kernel仓库"></a>建立你的Linux Kernel仓库</h3><p>当安装完毕时，运行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p git/kernels; cd git/kernels</span><br><span class="line"></span><br><span class="line">git clone -b staging-testing git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging.git</span><br></pre></td></tr></table></figure>
+<p>这里我clone的是Greg KH的linux树，你也可选择其他维护者的linux树 (比如<a target="_blank" rel="noopener" href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/">Linus</a>本人的).</p>
+<p>Linux kernel更新很快，你也许想要常常</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git fetch origin</span><br><span class="line"></span><br><span class="line"># and check the patches applied:</span><br><span class="line">git log --pretty=oneline --abbrev-commit origin </span><br><span class="line"># or any other branches you&#x27;ve been working on</span><br></pre></td></tr></table></figure>
+<p>并rebase你目前的branch</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git rebase your-branch</span><br></pre></td></tr></table></figure>
+
+<p>此刻你也许想要configure你的kernel，步骤在下面的<code>config文件</code>里</p>
+<h3 id="config文件"><a href="#config文件" class="headerlink" title="config文件"></a>config文件</h3><p>如果你想测试你是否成功修改某个bug，你也许想要把config文件复制到你正在运行的kernel上，这个config文件在<code>/boot</code>的某处，你可以用<code>uname -a</code>来找到那个config文件 (它应当以你的kernel版本结尾)，将那个文件复制到你的源文件目录里：</p>
+<p>Ubuntu/Debian:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp /boot/config-`uname -r`* .config </span><br></pre></td></tr></table></figure>
+<p>ArchLinux/Manjaro:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">zcat /proc/config.gz &gt; .config</span><br></pre></td></tr></table></figure>
+<p>不要忘记把你的kernel版本 “CONFIG_LOCALVERSION” 在新的.config 重命名 . 如果你跳过了这个，你可能会覆盖你现有的kernel信息。</p>
+<p>如果你需要改变configuration文件，运行这条命令将configuration到它们的默认值：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make olddefconfig</span><br></pre></td></tr></table></figure>
+
+<p>如果要改变编译信息 (进入GUI界面)：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make menuconfig</span><br></pre></td></tr></table></figure>
+
+<p>为了编译更快进行，你可以不编译你系统中当前没有使用的模块：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make localmodconfig</span><br></pre></td></tr></table></figure>
+
+<h3 id="编译kernel"><a href="#编译kernel" class="headerlink" title="编译kernel"></a>编译kernel</h3><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make -jn</span><br></pre></td></tr></table></figure>
+
+<p>安装kernel:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo make modules_install install </span><br></pre></td></tr></table></figure>
+
+<p>运行kernel:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vim /etc/default/grub </span><br></pre></td></tr></table></figure>
+
+<p>(如果你的grub里有这些，你需要删除它们：)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">GRUB_HIDDEN_TIMEOUT=0</span><br><span class="line">GRUB_HIDDEN_TIMEOUT_QUIET=true</span><br></pre></td></tr></table></figure>
+
+<p>你会想把grub的timeout改长一点 (这样你可以在grub停留更长时间)：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GRUB_TIMEOUT=60</span><br></pre></td></tr></table></figure>
+
+<p>请确保：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GRUB_TIMEOUT_STYLE=menu</span><br></pre></td></tr></table></figure>
+
+<p>恭喜，你已经到了第一阶段的最后一步：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo update-grub2</span><br></pre></td></tr></table></figure>
+<p>此时你也许需要重启。</p>
+<h2 id="patch编译-amp-测试"><a href="#patch编译-amp-测试" class="headerlink" title="patch编译&amp;测试"></a>patch编译&amp;测试</h2><h3 id="代码规范"><a href="#代码规范" class="headerlink" title="代码规范"></a>代码规范</h3><p>Linux kernel的代码有一套自己的 (非常复杂的) <a target="_blank" rel="noopener" href="https://www.kernel.org/doc/html/v4.10/process/coding-style.html">规范</a>，他们写了一个perl文件<a target="_blank" rel="noopener" href="http://lxr.free-electrons.com/source/scripts/checkpatch.pl">checkpatch.pl</a>来做检查。你应当用它来检查你修改后的代码，不过它有时也会给出false positive的警告 (例如一些“一行超过80字” —— 实际上断开更不利于阅读，“此处使用volitale一般是错误的” —— 实际上并无错误)，你需要自行判断。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">perl scripts/checkpatch.pl -f the/path/to/your/file | less</span><br></pre></td></tr></table></figure>
+
+<p><strong>小建议</strong>：</p>
+<p>如果你不知道从何下手，你可以试着看看<code>drivers/staging</code>，它充满了需要被修改的代码，运行这个命令来看看在todo-list的任务有哪些：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find drivers/staging -name TODO</span><br></pre></td></tr></table></figure>
+
+<h3 id="编译"><a href="#编译" class="headerlink" title="编译"></a>编译</h3><p>如果你已经做了代码修改，在编译你的新kernel之前，你也许想要在</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make menuconfig</span><br></pre></td></tr></table></figure>
+<p>里把你修改过的模块作为Module编译。(注：可以使用’/‘来搜索你改动的地方，如果你在改动drivers，记得要把编译选项改为模块 (‘M’)，而不是内置 (‘*‘)，退出时记得保存你修改的configuration.)</p>
+<p>如果你修改的部位在这里找不到，搜索它 (‘/‘)，查看它的依赖，你需要递归地把它的依赖设置为’m’ (instead of ‘n’).</p>
+<p>如果你想知道，举个例子，<code>xhci-hcd</code>是什么文件编译成的，你可以运行这条命令来查看：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git grep xhci-hcd -- &#x27;*Makefile&#x27;</span><br></pre></td></tr></table></figure>
+<p>开始编译：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make -jn</span><br></pre></td></tr></table></figure>
+<p>请注意：引起warning的patch是不会被接受的。</p>
+<p>编译太慢了？你可以只编译kernel的一部分：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">make drivers/staging/ </span><br><span class="line"><span class="meta">#</span><span class="bash"> does not link the modules</span></span><br><span class="line"></span><br><span class="line">make M=drivers/staging </span><br><span class="line"><span class="meta">#</span><span class="bash"> links modules <span class="keyword">in</span> previously build vmlinux file: might fail when .config is changed or a newer git tree is rebased</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>安装</strong>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo make modules_install install</span><br></pre></td></tr></table></figure>
+
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><p>你已经编译好了一个新内核了！此时你需要重启。然后运行 (如果你改动的是/drivers)：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">modprobe name-of-your-driver # load the driver</span><br><span class="line">lsmod | less # see the drivers loaded</span><br></pre></td></tr></table></figure>
+
+<p>那么如何知道<code>name-of-your-driver</code>应该是什么？运行：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls drivers/staging/your-path/*.ko</span><br></pre></td></tr></table></figure>
+<p>看看输出的名字是什么。</p>
+<p>另：如果你运行的kernel和你修改的kernel的版本一样，你测试时可以不重启，你可以安装/lib/modules里的模块，unload再reload它：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">make -jn &amp;&amp; sudo make modules_install</span><br><span class="line">sudo modprobe -r &lt;module_name&gt;</span><br><span class="line">sudo modprobe &lt;module_name&gt; </span><br><span class="line">lsmod | less</span><br></pre></td></tr></table></figure>
+
+<p><strong>回滚</strong></p>
+<p>Oops! 你的patch有问题？你也许想回滚到这个patch开始之前：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git reset --hard HEAD</span><br><span class="line"><span class="meta">#</span><span class="bash"> HEAD can be replaced any other commit <span class="built_in">hash</span></span></span><br></pre></td></tr></table></figure>
+
+<h2 id="发送你的patch"><a href="#发送你的patch" class="headerlink" title="发送你的patch"></a>发送你的patch</h2><p>你已经来到了最后一步：发送你的补丁。</p>
+<h3 id="email软件"><a href="#email软件" class="headerlink" title="email软件"></a>email软件</h3><p>我们推荐你使用git-email或是mutt来发送你的patch：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install esmtp</span><br><span class="line">sudo apt-get install mutt</span><br><span class="line"><span class="meta">#</span><span class="bash"> or</span></span><br><span class="line">sudo apt-get install git-email</span><br></pre></td></tr></table></figure>
+<p>你也许想要把vim作为你的默认text editor:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo update-alternatives --config editor</span><br></pre></td></tr></table></figure>
+<p>选择<code> /usr/bin/vim.basic</code>作为你的默认text editor.</p>
+<p>(下面是一些vim格式调整，它能方便你编辑，统一的patch格式也方便邮件列表中其他维护者查看你的patch:)</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim ~/.vimrc</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">filetype plugin indent on</span><br><span class="line">syntax on</span><br><span class="line">set </span><br><span class="line"></span><br><span class="line">set tabstop=8</span><br><span class="line">set softtabstop=8</span><br><span class="line">set shiftwidth=8</span><br><span class="line">set noexpandtab</span><br></pre></td></tr></table></figure>
+<h3 id="Gmail设置"><a href="#Gmail设置" class="headerlink" title="Gmail设置"></a>Gmail设置</h3><p>在<code>Setting</code>里面的<code>Forwarding POP/IMAP</code>: 选择<code>Enable IMAP</code>并保存。</p>
+<p>点击页面底部的”Configuration instructions”，把”Step 2”里的server信息复制到你的.esmtprc文件里 (我们用esmtp来发送邮件).</p>
+<p>如果你的gmail邮箱开启了两步验证，你需要用到<a target="_blank" rel="noopener" href="https://support.google.com/accounts/answer/185833?hl=en">App Password</a>.</p>
+<h3 id="emstp设置"><a href="#emstp设置" class="headerlink" title="emstp设置"></a>emstp设置</h3><p>(你可以选择其他的MTA).<br>首先创建.esmptrc:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">touch ~/.esmtprc</span><br><span class="line">chmod g-rwx ~/.esmtprc</span><br><span class="line">chmod o-rwx ~/.esmtprc</span><br></pre></td></tr></table></figure>
+<p>编辑这个文件：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">identity &quot;my.email@gmail.com&quot;</span><br><span class="line">hostname smtp.gmail.com:587 # or other mail server</span><br><span class="line">username &quot;my.email@gmail.com&quot;</span><br><span class="line">password &quot;ThisIsNotARealPassWord&quot;</span><br><span class="line">starttls required </span><br></pre></td></tr></table></figure>
+<p>(我的密码里有<code>&#39;</code>，这给我造成了很大麻烦——我花了不少时间确定问题<em>居然</em>出在我的gmail密码上，如果你的密码也有这样的特殊字符，记得加’&#39;).</p>
+<p>然后设置git： 在.gitconfig里加上：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[user]</span><br><span class="line">   name = Your Name</span><br><span class="line">   email = your.email@example.com </span><br><span class="line"></span><br><span class="line">[sendemail]</span><br><span class="line">   smtpserver = /usr/bin/esmtp</span><br></pre></td></tr></table></figure>
+
+<p>请注意，在这里的姓名必须是你的<strong>原名</strong> (有法律效益的)，不是你的github用户名或是网名。这将会填写你的patch中的’sign-off-by’栏，详情请见<a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/latest/source/Documentation/process/submitting-patches.rst">Developer’s Certificate of Origin</a>.</p>
+<h3 id="git-post-commit钩-hook"><a href="#git-post-commit钩-hook" class="headerlink" title="git post-commit钩 (hook)"></a>git post-commit钩 (hook)</h3><p>Linux kernel的开发者对patch的格式也有要求 (They’re so picky!)，所以你需要一个git post-commit hook.</p>
+<p>如果你已经有一个<code>.git/hooks/post-commit</code>了，请把它重命名为<code>.git/hooks/post-commit.old</code>，然后创建一个新的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/sh</span><br><span class="line">exec git show --format=email HEAD | ./scripts/checkpatch.pl --strict --codespell</span><br></pre></td></tr></table></figure>
+<p>然后:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod a+x .git/hooks/post-commit</span><br></pre></td></tr></table></figure>
+
+<p>(如果你没有/usr/share/codespell/dictionary.txt，请运行：)</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install codespell</span><br></pre></td></tr></table></figure>
+
+<p>Linux kernel的补丁有自己的格式要求，**在你开始创建你的pactch之前，请阅读<a target="_blank" rel="noopener" href="https://kernelnewbies.org/PatchPhilosophy">Linux内核补丁的哲学</a>**，<a target="_blank" rel="noopener" href="https://etsai.site/2019/03/11/philosophy-of-linux-kernel-patches/">这个</a>是我翻译<del>了一半</del>的中文版。</p>
+<h3 id="Alas"><a href="#Alas" class="headerlink" title="Alas"></a>Alas</h3><p>如果你在墙内，你可能需要通过ss (这里就不写怎么配置ss了) 来发送你的邮件，比如使用<code>proxychains</code>：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install proxychains</span><br></pre></td></tr></table></figure>
+<p>配置好：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/proxychains.conf</span><br><span class="line"></span><br><span class="line">[ProxyList]</span><br><span class="line"></span><br><span class="line">socks5 127.0.0.1 1080 ## Set socks5 proxy to your sslocal your_ip/port</span><br></pre></td></tr></table></figure>
+<p>然后使用类似下面的命令来发送你的patch:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxychains git send-email ...</span><br></pre></td></tr></table></figure>
+
+<p><del>我之前用的light，一直发不出去，馒头一语点醒我：light代理的是http&amp;https，邮件用的协议是smtp，机智的馒头！</del></p>
+<h3 id="关于邮件格式"><a href="#关于邮件格式" class="headerlink" title="关于邮件格式"></a>关于邮件格式</h3><p>注意：当你回复linux kernel相关邮件列表中的邮件时，请保证你的邮件风格与社区一致，使用这些<a target="_blank" rel="noopener" href="https://www.kernel.org/doc/html/v4.12/process/email-clients.html">“被批准的邮件客户端”</a>。 <strong>不要使用gmail 网页端</strong>，它会给引用换行；<strong>不要使用outlook</strong>，它会搞乱patch，把tab换成空格 (outlook developers: 空格党的胜利).</p>
+<p>(我发送了十来个patch之后才注意到这个:o，我注意到了每个人的引用和我的gmail客户端都不一样，可我没想过为什么……幸运的是大家都很友善 and nobody scold me for that :P)</p>
+<p><strong>请使用inline回复</strong>，而不是top-posting.<br>inline (把新内容回复到相应的文字下面):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&gt; &gt; Hi. I just submit a patch to fix the first __ATTR_NULL, but I have some </span><br><span class="line">&gt; question about the latter one.</span><br><span class="line">&gt; I understand it is better to use read only attribute here, but by changing </span><br><span class="line">&gt; __ATTR to __ATTR_RO, since the new macro does not need the _show_function  </span><br><span class="line">&gt; parameter:</span><br><span class="line">&gt; </span><br><span class="line">&gt; &gt; (linux/sysfs.h, line 115)</span><br><span class="line">&gt; &gt; #define __ATTR_RO(_name) &#123; \</span><br><span class="line">&gt; &gt; .attr = &#123; .name = __stringify(_name), .mode = 0444 &#125;, \</span><br><span class="line">&gt; &gt; .show = _name##_show, \</span><br><span class="line">&gt; &gt; &#125;</span><br><span class="line">&gt; </span><br><span class="line">&gt; it seems to me that the second parameter in this macro should be deleted, </span><br><span class="line">&gt; which means all other file which calls this macro should be revised. </span><br><span class="line">&gt; I think it&#x27;s a big code change, and don&#x27;t know whether it&#x27;s suitable to do </span><br><span class="line">&gt; this. Could you give me some advice?</span><br><span class="line"></span><br><span class="line">Yes, it is a big code change, and if you are not comfortable with it, I</span><br><span class="line">would not recommend it at this point in time.</span><br><span class="line"></span><br><span class="line">This is also why no one has done it yet :)</span><br><span class="line"></span><br><span class="line">thanks,</span><br><span class="line"></span><br><span class="line">greg k-h</span><br></pre></td></tr></table></figure>
+<p>top-posting (直接回复到最上面)：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Thanks greg! I&#x27;ll be more careful with this next time!</span><br><span class="line"></span><br><span class="line">On Saturday, March 9, 2019 at 2:12:36 AM UTC-8, gregkh wrote:</span><br><span class="line">&gt;That&#x27;s 4 patches, which is great, but you sent out 5 patches in this </span><br><span class="line">&gt;series :( </span><br><span class="line">&gt;</span><br><span class="line">&gt;Odds are you had a file that ended in .patch in the directory when you </span><br><span class="line">&gt;sent this out.  It happens to everyone :) </span><br><span class="line">&gt;</span><br><span class="line">&gt;I&#x27;ll just drop it and focus on the numbered patches. </span><br><span class="line">&gt;</span><br><span class="line">&gt;thanks, </span><br><span class="line">&gt;</span><br><span class="line">&gt;greg k-h </span><br></pre></td></tr></table></figure>
+<p>I learned this one the hard way :(</p>
+<h3 id="Patchset"><a href="#Patchset" class="headerlink" title="Patchset"></a>Patchset</h3><p>如果你想一次提交多个patch (而且它们是相关的)，你可以把它们放进一个patchset里。 </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git format-patch -n --subject-prefix=&quot;PATCH vY&quot; --cover-letter -o /tmp/</span><br><span class="line"><span class="meta">#</span><span class="bash"> or you can use commit <span class="built_in">hash</span> to <span class="keyword">do</span> this: &lt;hash1&gt;^..&lt;hash2&gt;</span></span><br><span class="line"></span><br><span class="line">git send-email /tmp/*.patch</span><br></pre></td></tr></table></figure>
+<p>patchset也要遵循其他的规则 (比如version)，你还需要编辑/tmp/里的cover-letter: 描述这个patchset做的事情。更多细节请阅读<a target="_blank" rel="noopener" href="https://kernelnewbies.org/PatchPhilosophy">Linux内核补丁的哲学</a>。</p>
+<h3 id="发送patch"><a href="#发送patch" class="headerlink" title="发送patch"></a>发送patch</h3><p><strong>编写commit</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git add &lt;modified-file&gt;</span><br><span class="line">git commit -s -v</span><br></pre></td></tr></table></figure>
+<p>请注意按照<a target="_blank" rel="noopener" href="https://kernelnewbies.org/PatchPhilosophy">Linux内核补丁的哲学</a>里的格式创建你的patch，<strong>记得</strong>要在标题和主体之前留一行空白，主体结束后也要留一行空白 (因为你的名字，发送时间还有邮箱会被自动加到patch里)。</p>
+<p>运行下面这个命令来查看你的commit：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">git show HEAD</span><br><span class="line"></span><br><span class="line"># if you want to revise it:</span><br><span class="line">git commit --amend -v</span><br><span class="line"></span><br><span class="line"># You might want to make sure your commit looks fine</span><br><span class="line">git log --pretty=oneline --abbrev-commit HEAD^</span><br></pre></td></tr></table></figure>
+
+<p><strong>维护者们</strong><br>你需要把这个patch发给你修改的部分的维护者们 (another perl file for this)：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git show HEAD | perl scripts/get_maintainer.pl --separator , --nokeywords --nogit --nogit-fallback --norolestats --nol</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash"> or</span></span><br><span class="line">perl scripts/get_maintainer.pl --separator , --nokeywords --nogit --nogit-fallback --norolestats --nol -f path/to/your/file</span><br></pre></td></tr></table></figure>
+<p>这个perl文件会告诉你这个patch应该发给哪些人。</p>
+<p><strong>patch生成&amp;发送</strong></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git format-patch -o /tmp/ HEAD^</span><br></pre></td></tr></table></figure>
+<p>如果你是在修改一个已经发送过的patch，请将版本 (第y次修改版)加到标题里：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git format-patch --subject-prefix=&quot;PATCH vY&quot; -o /tmp/ HEAD^</span><br></pre></td></tr></table></figure>
+
+<p>此刻你的patch被放在了/tmp/下，你可以使用mutt发送它：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mutt -H /tmp/0001-&lt;name-of-your-patch&gt;</span><br></pre></td></tr></table></figure>
+
+<p>你也可以使用git send-email用同样的方法发送/tmp下的补丁，也可直接发送HEAD:</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git send-email --annotate HEAD^</span><br></pre></td></tr></table></figure>
+
+<p>在把你的第一个补丁发送给它的维护者之前，你也许想要先发送到自己的邮箱看看有没有问题。</p>
+<p><strong>感谢你读到这里</strong>，如果你的patch被加入原维护者的git tree里，它通常会出现在24小时之内发行的linux-next tree里。</p>
+<p>Voila! 你的代码出现在船新版本的Linux kernel里了:)</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/eltsai/E-Tsai.github.io/tags/CN/" rel="tag"># CN</a>
+              <a href="/eltsai/E-Tsai.github.io/tags/systems/" rel="tag"># systems</a>
+              <a href="/eltsai/E-Tsai.github.io/tags/technics/" rel="tag"># technics</a>
+              <a href="/eltsai/E-Tsai.github.io/tags/translated/" rel="tag"># translated</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/eltsai/E-Tsai.github.io/philosophy-of-linux-kernel-patches/" rel="prev" title="Linux内核补丁的哲学">
+      <i class="fa fa-chevron-left"></i> Linux内核补丁的哲学
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/eltsai/E-Tsai.github.io/Total-Perspective-Vortex-EN/" rel="next" title="Total Perspective Vortex">
+      Total Perspective Vortex <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE-amp-%E5%88%9D%E6%AD%A5%E7%BC%96%E8%AF%91"><span class="nav-number">1.</span> <span class="nav-text">环境配置&amp;初步编译</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">1.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BB%BA%E7%AB%8B%E4%BD%A0%E7%9A%84Linux-Kernel%E4%BB%93%E5%BA%93"><span class="nav-number">1.2.</span> <span class="nav-text">建立你的Linux Kernel仓库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#config%E6%96%87%E4%BB%B6"><span class="nav-number">1.3.</span> <span class="nav-text">config文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91kernel"><span class="nav-number">1.4.</span> <span class="nav-text">编译kernel</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#patch%E7%BC%96%E8%AF%91-amp-%E6%B5%8B%E8%AF%95"><span class="nav-number">2.</span> <span class="nav-text">patch编译&amp;测试</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81%E8%A7%84%E8%8C%83"><span class="nav-number">2.1.</span> <span class="nav-text">代码规范</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%96%E8%AF%91"><span class="nav-number">2.2.</span> <span class="nav-text">编译</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95"><span class="nav-number">2.3.</span> <span class="nav-text">测试</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%91%E9%80%81%E4%BD%A0%E7%9A%84patch"><span class="nav-number">3.</span> <span class="nav-text">发送你的patch</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#email%E8%BD%AF%E4%BB%B6"><span class="nav-number">3.1.</span> <span class="nav-text">email软件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Gmail%E8%AE%BE%E7%BD%AE"><span class="nav-number">3.2.</span> <span class="nav-text">Gmail设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#emstp%E8%AE%BE%E7%BD%AE"><span class="nav-number">3.3.</span> <span class="nav-text">emstp设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#git-post-commit%E9%92%A9-hook"><span class="nav-number">3.4.</span> <span class="nav-text">git post-commit钩 (hook)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Alas"><span class="nav-number">3.5.</span> <span class="nav-text">Alas</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E%E9%82%AE%E4%BB%B6%E6%A0%BC%E5%BC%8F"><span class="nav-number">3.6.</span> <span class="nav-text">关于邮件格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Patchset"><span class="nav-number">3.7.</span> <span class="nav-text">Patchset</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%91%E9%80%81patch"><span class="nav-number">3.8.</span> <span class="nav-text">发送patch</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Elisa Tsai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/eltsai/E-Tsai.github.io/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/eltsai/E-Tsai.github.io/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/eltsai/E-Tsai.github.io/tags/">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/eltsai" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;eltsai"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/dumblelisapapernotes" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;dumblelisapapernotes" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Telegram</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://scholar.google.com/citations?user=3NA-OTQAAAAJ" title="Scholar → https:&#x2F;&#x2F;scholar.google.com&#x2F;citations?user&#x3D;3NA-OTQAAAAJ" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>Scholar</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.instagram.com/elisatdraws/" title="Instagram → https:&#x2F;&#x2F;www.instagram.com&#x2F;elisatdraws&#x2F;" rel="noopener" target="_blank"><i class="fab fa-instagram fa-fw"></i>Instagram</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Elisa Tsai</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/eltsai/E-Tsai.github.io/lib/anime.min.js"></script>
+  <script src="/eltsai/E-Tsai.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/eltsai/E-Tsai.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/eltsai/E-Tsai.github.io/js/utils.js"></script>
+
+<script src="/eltsai/E-Tsai.github.io/js/motion.js"></script>
+
+
+<script src="/eltsai/E-Tsai.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/eltsai/E-Tsai.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

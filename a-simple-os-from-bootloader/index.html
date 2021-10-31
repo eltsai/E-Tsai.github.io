@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/eltsai/E-Tsai.github.io/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/eltsai/E-Tsai.github.io/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/eltsai/E-Tsai.github.io/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/eltsai/E-Tsai.github.io/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/eltsai/E-Tsai.github.io/css/main.css">
+
+
+<link rel="stylesheet" href="/eltsai/E-Tsai.github.io/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"github.com","root":"/eltsai/E-Tsai.github.io/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前言&amp;工具&amp;emsp; 我使用的是AT&amp;T语法汇编，使用GCC编译，在qemu上跑这个简易的操作系统。GCC要求汇编代码是AT&amp;T格式的，如果使用你想使用NASM编译的话，则可以使用intel语法。ld是GNU汇编器的链接器，GNU汇编器使用 AT&amp;T 样式的语法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从启动盘开始写一个简易操作系统">
+<meta property="og:url" content="https://github.com/eltsai/E-Tsai.github.io/a-simple-os-from-bootloader/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="前言&amp;工具&amp;emsp; 我使用的是AT&amp;T语法汇编，使用GCC编译，在qemu上跑这个简易的操作系统。GCC要求汇编代码是AT&amp;T格式的，如果使用你想使用NASM编译的话，则可以使用intel语法。ld是GNU汇编器的链接器，GNU汇编器使用 AT&amp;T 样式的语法。">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://img.shields.io/badge/Lan-CN-orange">
+<meta property="og:image" content="http://drive.google.com/uc?export=view&id=0B_0Ovo-1o-jAUk9zLUlaSGNSajg">
+<meta property="og:image" content="http://drive.google.com/uc?export=view&id=0B_0Ovo-1o-jAcVo2dFAyUk94RUk">
+<meta property="og:image" content="http://drive.google.com/uc?export=view&id=0B_0Ovo-1o-jAUk9zLUlaSGNSajg">
+<meta property="article:published_time" content="2017-07-09T23:02:08.000Z">
+<meta property="article:modified_time" content="2021-10-30T15:38:41.280Z">
+<meta property="article:author" content="Elisa Tsai">
+<meta property="article:tag" content="CN">
+<meta property="article:tag" content="systems">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img.shields.io/badge/Lan-CN-orange">
+
+<link rel="canonical" href="https://github.com/eltsai/E-Tsai.github.io/a-simple-os-from-bootloader/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>从启动盘开始写一个简易操作系统 | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/eltsai/E-Tsai.github.io/atom.xml" title="Hexo" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/eltsai/E-Tsai.github.io/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/eltsai/E-Tsai.github.io/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/eltsai/E-Tsai.github.io/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://github.com/eltsai/E-Tsai.github.io/a-simple-os-from-bootloader/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/eltsai/E-Tsai.github.io/images/avatar.gif">
+      <meta itemprop="name" content="Elisa Tsai">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          从启动盘开始写一个简易操作系统
+        </h1>
+
+        <div class="post-meta">
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2017-07-09 19:02:08" itemprop="dateCreated datePublished" datetime="2017-07-09T19:02:08-04:00">2017-07-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2021-10-30 11:38:41" itemprop="dateModified" datetime="2021-10-30T11:38:41-04:00">2021-10-30</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/eltsai/E-Tsai.github.io/categories/CS/" itemprop="url" rel="index"><span itemprop="name">CS</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><img src="https://img.shields.io/badge/Lan-CN-orange"></p>
+<h2 id="前言-amp-工具"><a href="#前言-amp-工具" class="headerlink" title="前言&amp;工具"></a>前言&amp;工具</h2><p>&emsp; 我使用的是AT&amp;T语法汇编，使用GCC编译，在qemu上跑这个简易的操作系统。GCC要求汇编代码是AT&amp;T格式的，如果使用你想使用NASM编译的话，则可以使用intel语法。ld是GNU汇编器的链接器，GNU汇编器使用 AT&amp;T 样式的语法。</p>
+ <span id="more"></span>
+
+<p>&emsp; <strong>书籍推荐</strong>： <a href="">《Orange’s : 一个操作系统的实现》</a> ， 这本书使用的是intel语法，非常详细地讲述了如何从一个启动盘写到一个具有进程调度、内存管理、文件系统、输入输出系统和进程间通信功能的os。书后附有代码，即使只是阅读代码也能有很多收获。</p>
+<p>&emsp; 今天我要实现的是一个时间片轮转调度的简易os，并未实现文件系统和输入输出、进程通信。在这篇博客里我会列出学习操作系统时比较重要的知识点。我不会贴出我所有的代码，因为a)Oranges’s里面已经很完备了，b)节省空间；我也不会深入地讲每一个知识点，google is always your friend :-D</p>
+<p><strong>一些可能有用的资料</strong>:</p>
+<p><a target="_blank" rel="noopener" href="http://www.c-jump.com/CIS77/ASM/DataTypes/lecture.html#T77_0010_arithmetic">[1] x86汇编数据类型</a>  </p>
+<p><a target="_blank" rel="noopener" href="http://csiflabs.cs.ucdavis.edu/~ssdavis/50/att-syntax.html">[2] AT&amp;T语法</a> </p>
+<p><a target="_blank" rel="noopener" href="https://www.ibm.com/developerworks/cn/linux/l-gas-nasm.html">[3] Linux 汇编器：对比 GAS 和 NASM</a>  # 善用ctrl+F</p>
+<p><a target="_blank" rel="noopener" href="http://baike.baidu.com/item/bios?fr=aladdin">[4] BIOS是什么</a> </p>
+<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/INT_10H">[5] BIOS中断</a> </p>
+<p><a target="_blank" rel="noopener" href="https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/4/html/Using_ld_the_GNU_Linker/simple-example.html">[6]Simple Linker Script Example</a>  </p>
+<p><a target="_blank" rel="noopener" href="https://sourceware.org/binutils/docs/as/Macro.html">[7] 宏</a>  </p>
+<p><a target="_blank" rel="noopener" href="http://www.techbulo.com/708.html">[8] GDT,LDT,GDTR,LDTR 详解</a>  </p>
+<p><a target="_blank" rel="noopener" href="http://baike.baidu.com/link?url=BE46Q77Bzdi8kRcBAiTT1cQ_2UimKCV-yworYMFYxShDcEjriOfIPr2RZK_lTyrApIvi31Mc3cKOMMk4QZTVBq">[9] Initrd是什么</a>  </p>
+<p><a target="_blank" rel="noopener" href="http://www.cnblogs.com/chengxuyuancc/archive/2013/05/12/3073738.html">[10] 实模式</a>  </p>
+<p><a target="_blank" rel="noopener" href="http://blog.csdn.net/yang_yulei/article/details/22613327">[11] 寄存器相关</a>  </p>
+<p><a target="_blank" rel="noopener" href="http://www.cnblogs.com/defen/p/4755809.html">[12] c语言环境初始化&amp;c语言和汇编混合编程</a>  </p>
+<h2 id="引导扇区"><a href="#引导扇区" class="headerlink" title="引导扇区"></a>引导扇区</h2><h3 id="词汇解释"><a href="#词汇解释" class="headerlink" title="词汇解释"></a>词汇解释</h3><h4 id="BIOS"><a href="#BIOS" class="headerlink" title="BIOS"></a>BIOS</h4><p>&emsp;BIOS是英文”Basic Input Output System”的缩略词，直译过来后中文名称就是”基本输入输出系统”。其实，它是一组固化到计算机内主板上一个ROM芯片上的程序，它保存着计算机最重要的基本输入输出的程序、系统设置信息、开机后自检程序和系统自启动程序。 其主要功能是为计算机提供最底层的、最直接的硬件设置和控制。  </p>
+<h4 id="启动协议"><a href="#启动协议" class="headerlink" title="启动协议"></a>启动协议</h4><p>资料：<a target="_blank" rel="noopener" href="http://larmbr.com/2013/09/28/the-evolution-of-x86-real-mode-to-protected-mode-and-of-booting-protocol/">Linux内核启动协议</a>  (小内核时代与大内核时代的对比)</p>
+<h5 id="zImage："><a href="#zImage：" class="headerlink" title="zImage："></a>zImage：</h5><ul>
+<li>从0x00000至0x01000这4k空间主要是保留给BIOS使用，存放加电自检期间检查到的系统硬件配置。比如BIOS在初始化硬件时，会把中断向量初始化放在地址0开始的物理内存处。</li>
+<li>接下来从0x01000开始，就是可以存放引导程序的地方。引导程序负责把内核映像加载到内存，再将控制权交给内核。BIOS在完成其加电自检(POST), 检测外围设备等工作后,　就把磁盘设备上的MBR(Master Boot Record)加载到物理地址0x07c00处(而不是恰好在0x01000)。其实MBR正是存放着引导程序。MBR块是硬盘第一个扇区，它的大小只有512字节。如此小的引导程序能把内核映像加载到内存吗？ 在Linux初期，内核映像(zImage,有别于后来的大内核bImage)是很小的, 比如0.1.1版本内核的大小才196KB。所以，512byte的引导程序是可以把内核映像加载到内存的，这部分代码对应于之前的/boot/boot_sect.S这个文件，从名字可以看出，boot sector意即启动扇区，正是指MBR块。它在编译后大小刚好为512字节，能放在MBR块处。</li>
+</ul>
+<h5 id="bzImage"><a href="#bzImage" class="headerlink" title="bzImage"></a>bzImage</h5><p>&emsp;随着内核的发展，内核体积也越来越庞大，进入了大内核时代。像旧时代靠内核自身的512字节的引导程序已经无法完成如此复杂的功能，需要引入专门的引导程序。</p>
+<ul>
+<li><strong>首先执行基本的引导装载过程</strong>，该程序通常位于主引导记录(MBR)中，大小为512字节，由BIOS将其装入RAM中物理地址0x00007c00处，这就替代了旧内核时代内核自身的引程序，它的任务是建立实模式栈并利用BIOS指令将第二引导加载过程装入内存。</li>
+</ul>
+<ul>
+<li><strong>第二引导加载过程(又称次引导过程)随后从磁盘读取可用操作系统的映射表</strong>，并提供给用户一个提示符，当用户选择需要被载入的操作系统(如双系统的时候选择Lunix或是windows)，或是经过一段时间的延迟自动选择一个默认值之后，次引导过程便将相应分区下的内核映像以及initrd<em>（Linux初始RAM磁盘（initrd）是在系统引导过程中挂载的一个临时根文件系统，用来支持两阶段的引导过程。initrd文件中包含了各种可执行程序和驱动程序，它们可以用来挂载实际的根文件系统，然后再将这个 initrd RAM磁盘卸载，并释放内存。）</em>装载到内存中，而前述的映射表是GRUB(GRand Unified Bootloader）通过读取/boot/grub/grub.conf文件中所设置的内容生成的。另外次引导过程还包括对特定文件系统(如ext2，ext3等)的支持以及对内核启动代码的初始化等职责，这就决定了次引导过程将占用较大的存储空间——连续多个扇区，从而无法装进单个扇区中，因此GRUB通常将该过程放在特定的文件系统中（通常是boot所在的根分区）。</li>
+</ul>
+<ul>
+<li>次引导过程拷贝到内存的目标中包括一个名为initrd的文件，该文件的全称为boot loader initialized RAM disk，即bootloader初始化内存盘。它主要用于实现一些模块的加载以及文件系统的安装等功能。在次引导过程完成相应文件的加载之后将会执行一个长跳转指令，该指令跳过实模式内核代码的前512个字节，也即跳到由前述链接脚本所指定的执行入口_start处开始执行，而所跳过的512字节正是我们之前剖析的Linux内核自带的引导程序，整个的衔接过程可谓天衣无缝。而内核自带的boot_sect模块已经失去了它的作用，所以，从2.6.24版本的内核开始，已经把boot_sect.S和setup.S文件合并成为一个header.S文件。</li>
+</ul>
+<p>对于我们接下来写的引导程序(boot loader)，理解启动协议是非常必要的。</p>
+<h4 id="中断"><a href="#中断" class="headerlink" title="中断"></a>中断</h4><p>&emsp;关中断是为了保护一些不能中途停止执行的程序而设计的，计算机的CPU进行的是时分复用。在多道程序设计的环境下，CPU是不断地交替地将这些程序的指令一条一条的分别执行。而CPU在这些指令之间的切换就是通过中断来实现的。关中断就是为了让CPU在一段时间内执行同一程序的多条指令而设计的，比如在出现了非常事件后又恢复正常时，CPU就会忙于恢复现场，在恢复现场的时候，CPU是不允许被其他的程序打扰的，此时就要启动关中断，不再相应其他的请求。当现场恢复完毕后，CPU就启动开中断，其他等待着的程序的指令就开始被CPU执行，计算机恢复正常。 </p>
+<p>&emsp;boot只是完成硬件初始化，环境参数设置，代码搬运等工作，用不到中断。屏蔽中断是为了避免因为意外中断使得boot失败，最重要的是，对应中断代码还未准备好，所以启动时不能关中断。</p>
+<h4 id="实模式"><a href="#实模式" class="headerlink" title="实模式"></a>实模式</h4><p>&emsp; 实模式（Real mode）是Intel 80286和之后的x86兼容CPU的操作模式。实模式的特性是一个20bit的区块存储器地址空间（即只有1 MB的存储器可以被定址），可以<strong>直接软件访问BIOS例程以及周边硬件</strong>，没有任何硬件档次的存储器保护观念或多任务。所有的80286系列和之后的x86 CPU都是以实模式下开机；80186和早期的CPU仅仅只有一种操作模式，也就是相当于后来芯片的这种实模式。<br>&emsp; 实模式下80386不支持优先级，所 有的指令相当于工作在特权级（优先级0）。</p>
+<h4 id="链接脚本"><a href="#链接脚本" class="headerlink" title="链接脚本"></a>链接脚本</h4><p>&emsp; 在编译器产生可重定向的代码后，需要由链接脚本指出该程序将被加载到内存的什么地方。在输入文件在进行链接的时，每个链接都由链接脚本控制着，脚本由链接器命令语言组成。脚本的主要目的是描述如何把输入文件中的节（sections）映射到输出文件中，并控制输出文件的存储布局。  </p>
+<h4 id="寄存器"><a href="#寄存器" class="headerlink" title="寄存器"></a>寄存器</h4><p>AX――累加器（ Accumulator） ， 使用频度最高（ AH是它的高八位， AL是它的低八位， 其他同理）<br>BX――基址寄存器（ Base Register） ， 常存放存储器地址<br>CX――计数器（ Count Register） ， 常作为计数器<br>DX――数据寄存器（ Data Register） ， 存放数据<br>SI――源变址寄存器（ Source Index） ， 常保存存储单元地址<br>DI――目的变址寄存器（ Destination Index） ， 常保存存储单元地址<br>BP――基址指针寄存器（ Base Pointer） ， 表示堆栈区域中的基地址<br>SP――堆栈指针寄存器（ Stack Pointer） ， 指示堆栈区域的栈顶地址<br>IP――指令指针寄存器（ Instruction Pointer） ， 指示要执行指令所在存储单元的地址。 IP寄存器是一个专用寄存器。 </p>
+<p>在8086中设置4个16位的段寄存器， 用于管理4种段：<br>CS(code segment)是代码段(取指令所用的段寄存器和偏移量一定是用CS和IP)<br>DS是数据段(data segment)<br>SS(stack segment)是堆栈段(SP是用来指向该堆栈的栈顶， 把它们合在一起可访问栈顶单元)<br>ES(extra segment)是附加段(串操作的目标操作数所用的段寄存器和偏移量一定是ES和D)<br>把内存分段后， 每一个段就有一个段基址， 段寄存器保存的就是这个段基址的高16位， 这个16位的地址左移四位（ 后面加上4个0） 就可构成20位的段<br>基址。 </p>
+<h3 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h3><h4 id="启动扇区"><a href="#启动扇区" class="headerlink" title="启动扇区"></a>启动扇区</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">vga_sec = 0Xb800		# 1*</span><br><span class="line">clear = 4000</span><br><span class="line">.code16					# assembler directive to start 16-bit real mode </span><br><span class="line">.text</span><br><span class="line">.org 0x00				# the starting address of MBR</span><br><span class="line"></span><br><span class="line">.global _start  </span><br><span class="line">.section &quot;text&quot;,&quot;ax&quot;        </span><br><span class="line">_start:</span><br><span class="line">	cli					# clear interupt</span><br><span class="line">	mov %cs,%ax			# real-mode register</span><br><span class="line">	mov %ax,%ds</span><br><span class="line">	mov 0x4000, %ax		# the physical address loaded by the bootloader</span><br><span class="line">	mov %ax, %ss</span><br><span class="line">	xor %sp,%sp			# clear screen</span><br><span class="line">	call _boot</span><br><span class="line">	ret</span><br><span class="line">_boot:</span><br><span class="line">	cld					# clear direction flag</span><br><span class="line">	mov $vga_sec,%bx</span><br><span class="line">	mov %bx,%es</span><br><span class="line">	xor %di,%di</span><br><span class="line">	mov $0000,%ax</span><br><span class="line">	mov $clear,%cx		# clear screen</span><br><span class="line">	rep stosb</span><br><span class="line"></span><br><span class="line">	mov $msg,%si		# move the address of the string to the reg</span><br><span class="line">	mov $0x7,%ah		# COLOR</span><br><span class="line">	mov $vga_sec,%bx</span><br><span class="line">	mov %bx,%es</span><br><span class="line">	mov $986,%edx		# 2*</span><br><span class="line">	call _disp			# output</span><br><span class="line">	ret</span><br><span class="line">_disp:</span><br><span class="line">	lodsb</span><br><span class="line">	or %al,%al			# check if the string has been completely outputed</span><br><span class="line">	jz _endprint</span><br><span class="line">	mov %ax,%es:0(,%edx,2)</span><br><span class="line">	incl %edx</span><br><span class="line">	jmp _disp</span><br><span class="line">	ret</span><br><span class="line">_endprint:</span><br><span class="line">	hlt</span><br><span class="line">.section &quot;.data&quot;,&quot;a&quot;</span><br><span class="line">msg:</span><br><span class="line">    .asciz &quot;Hello, World!&quot;</span><br><span class="line">.section &quot;.signature&quot;, &quot;a&quot;	</span><br><span class="line">.globl	sig</span><br><span class="line">sig:	.word 0xaa55</span><br></pre></td></tr></table></figure>
+
+<p>[1] 1* &amp; 2* : </p>
+<p>&emsp;有两个寄存器：si和di(源寄存器、目的寄存器)，分别对应着指令stosb和lodsb,他们的区别在于：使用di时，是输出di寄存器里存放的ascii码所对应的字符，而使用si时，是输出si寄存器里存放的地址所对应的内存位置中所存放的ascii码对应的字符。<br>&emsp; 输出时，先将vga_sec装入es(extra segment)寄存器中，然后使用stosb/lodsb指令，完成输出。因为这次我实现了清屏，所以使用di存放null，完成清屏；使用si完成字符串输出：在ax寄存器中存放着属性和ascii码，用</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mov %ax,%es:0(,%edx,2)</span><br></pre></td></tr></table></figure>
+
+<p>这条指令，通过段偏移的方式将输出字符的信息存放在屏幕上特定位置所对应的内存中去。<br>内存中0x8b00开头的位置相当于是“特定”划给vga的(这个位置相当于LC-3里的DDR，将属性和ASCII码写入，即可输出)，这个实际上是映射，这样得以实现计算机与外部设备的数据交换。  </p>
+<p>*关于颜色之类的参数调整请自行搜索</p>
+<p>[2] CLD：</p>
+<p>&emsp; 将标志寄存器Flag的方向标志位DF清零。<br>&emsp; 在字串操作中使变址寄存器SI或DI的地址指针自动增加， 字串处理由前往后 。</p>
+<p>[3] 大小写后缀的区别:<br>&emsp; .s: 汇编语言源程序;汇编<br>&emsp; .S: 汇编语言源程序;预处理,汇编&emsp;<br>&emsp; 小写的s文件， 在后期阶段不在进行预处理操作， 所以我们不能在这里面写预处理的语句在里面.<br>&emsp; 大写的S文件， 还会进行预处理、 汇编等操作， 所以我们可以在这里面加入预处理的命令.<br>ld命令是GNU的连接器， 将目标文件连接为可执行程序。 </p>
+<h4 id="链接脚本-1"><a href="#链接脚本-1" class="headerlink" title="链接脚本"></a>链接脚本</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">OUTPUT_FORMAT(&quot;elf32-i386&quot;, &quot;elf32-i386&quot;, &quot;elf32-i386&quot;)</span><br><span class="line"></span><br><span class="line">OUTPUT_ARCH(i386)</span><br><span class="line"></span><br><span class="line">ENTRY(_start)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">SECTIONS</span><br><span class="line">&#123;</span><br><span class="line">	</span><br><span class="line">	. = 0x7C00;</span><br><span class="line">	</span><br><span class="line">	.text		: &#123; *(.text) &#125;</span><br><span class="line">	</span><br><span class="line">	.data		: &#123; *(.data) &#125;</span><br><span class="line"></span><br><span class="line">	</span><br><span class="line">	. = 0x7C00 + 510;</span><br><span class="line">	</span><br><span class="line">	.signature		: &#123; *(.signature) &#125;		# 4kb = 512 bytes</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="编译并执行"><a href="#编译并执行" class="headerlink" title="编译并执行"></a>编译并执行</h4><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">!/bin/sh</span></span><br><span class="line">gcc -c -m32 start16_hello.S -o start16_hello.o</span><br><span class="line">ld -T start16_hello.ld start16_hello.o -o start16_hello.elf # -T for &lt;filename&gt;.ld</span><br><span class="line">objcopy -O binary start16_hello.elf start16_hello.bin # or anything else will do</span><br><span class="line">dd if=/dev/zero of=a_start16_hello.img bs=512 count=2880 # start making booting floppy</span><br><span class="line">sudo losetup /dev/loop4 a_start16_hello.img</span><br><span class="line">sudo dd if=start16_hello.bin of=/dev/loop4 bs=512 count=1</span><br><span class="line">sudo losetup -d /dev/loop4</span><br><span class="line">qemu-system-i386 -fda a_start16_hello.img</span><br></pre></td></tr></table></figure>
+
+<p>&emsp; 到这一步为止，我们已经完成了一个启动扇区，并得到了一个启动软盘，并直接使用vga接口输出了Hello world的问候语。 </p>
+<h2 id="保护模式"><a href="#保护模式" class="headerlink" title="保护模式"></a>保护模式</h2><h3 id="名词解释"><a href="#名词解释" class="headerlink" title="名词解释"></a>名词解释</h3><h4 id="BIOS中断"><a href="#BIOS中断" class="headerlink" title="BIOS中断"></a>BIOS中断</h4><p>   CPU是根据中断号获取中断向量值，即对应中断服务程序的入口地址值。（类似于LC-3的trap，对应的向量表里存放着指令块的地址，转跳到对应的地址就能看见指令，实际上和上一次我们手动存到vga_seg的指令原理上差不多）。因此为了让CPU由中断号查找到对应的中断向量，就需要在内存中建立一张查询表，即中断向量表(在32位保护模式下该表称为中断描述符表)。80x86微机支持256个中断，对应每个中断需要安排一个中断服务程序。<br>  在80x86实模式运行方式下，每个中断向量由4字节组成。这4字节指明了一个中断服务程序的段值和段内偏移值。因此整个向量表的长度为1KB。当80x86微机启动时，ROM BIOS中的程序会在物理内存开始地址0x0000:0x0000处初始化并设置中断向量表，而各中断的默认中断服务程序则在BIOS中给出。由于中断向量表中的向量是按中断号顺序排列，因此给定一个中断号N，那么它对应的中断向量在内存中的位置就是0x0000:N×4，即对应的中断服务程序入口地址保存在物理内存0x0000:N×4位置处。<br>  若要在实模式下使用BIOS中断，需要在ah中存入想要使用的模式，然后调用int 0x10，选择0xe（put character）和直接写字符进入vga section的方式很像，不赘述。使用0x13(put string)则需要在cx中存储字符串的长度。<br>  BIOS中断只能在实模式中使用，所以进入保护模式后，如果要使用BIOS的程序，需要完成保护模式到实模式的转跳。</p>
+<h4 id="实模式与保护模式"><a href="#实模式与保护模式" class="headerlink" title="实模式与保护模式"></a>实模式与保护模式</h4><h5 id="实模式（20位）："><a href="#实模式（20位）：" class="headerlink" title="实模式（20位）："></a>实模式（20位）：</h5><p>&emsp; 16位段寄存器只记录段基址的高16位，因此段基址必须4位对齐（末4位为0），不采用虚拟地址空间，直接采用物理地址=段寄存器值*16+段内偏移。</p>
+<h5 id="保护模式（32位）"><a href="#保护模式（32位）" class="headerlink" title="保护模式（32位）"></a>保护模式（32位）</h5><p> &emsp; 16位段寄存器无法直接记录段的信息，因此需要与全局描述符表GDT配合使用。GDT中记录了每个段的信息（段描述符），段寄存器只需记录段在GDT中的序号。  </p>
+<h5 id="综述"><a href="#综述" class="headerlink" title="综述"></a>综述</h5><p>&emsp; 在IA32下， CPU有两种工作模式： 实模式和保护模式。 直观地看， 当我们打开自己的PC，开始时CPU是工作在实模式下的，经过某种机制之后，才进入保护模式。在保护模式下，CPU有着巨大的寻址能力，并为强大的32位操作系统提供了更好的硬件保障。     </p>
+<p>&emsp; 在实模式下，16位的寄存器需要用“ 段： 偏移” 这种方法才能达到1MB的寻址能力，如今我们有了32位寄存器，一个寄存器就可以寻址4GB的空间， 是不是从此段值就被抛弃了呢？ 实际上并没有，新政策下的地址仍然用“ 段:偏移” 这样的形式来表示，只不过保护模式下“ 段” 的概念发生了根本性的变化。实模式下，段值还是可以看做是地址的一部分的，段值为XXXXh表示以XXXX0h开始的一段内存。而保护模式下，虽然段值仍然由原来16位的cs、 ds等寄存器表示，但此时它仅仅变成了一个索引，这个索引指向一个数据结构的一个表项，表项中详细定义了段的起始地址、界限、 属性等内容。 这个数据结构，就是GDT（实际上还可能是LDT）。GDT中的表项也有一个专门的名字，叫做描述符（Descriptor）。</p>
+<h5 id="转变过程"><a href="#转变过程" class="headerlink" title="转变过程"></a>转变过程</h5><ul>
+<li>保存实模式下的SP内的值</li>
+<li>初始化段描述符</li>
+<li>加载GDTR</li>
+<li>关中断</li>
+<li>打开地址线A20</li>
+<li>准备切换到保护模式，置cr0的末位为1</li>
+<li>跳转到保护模式</li>
+</ul>
+<p>&emsp; 寄存器cr0的第0位是PE位， 此位为0时， CPU运行于实模式， 为1时， CPU运行于保护模式。 原来我们已经闭合了进入保护模式的开关， 也就是说， “ mov cr0, eax” 这一句之后， 系统就运行于保护模式之下了。 但是， 此时cs的值仍然是实模式下的值， 我们需要把代码段的选择子装入cs。 所以， 我们需要jmp指令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">jmp	dword SelectorCode32:0		;INTEL</span><br><span class="line">ljmp $SelectorCode32,$0			#AT&amp;T</span><br></pre></td></tr></table></figure>
+
+<p>&emsp; 注：长转移指令，能无条件在64KB内跳转。  </p>
+<p>&emsp; 根据寻址机制我们知道，这个跳转的目标将是描述符DESC_CODE32对应的段的首地址，即标号LABEL_SEG_CODE32处。  </p>
+<h3 id="GDT表"><a href="#GDT表" class="headerlink" title="GDT表"></a>GDT表</h3><h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p>&emsp; 每个段有8位的段描述符(segment descriptor),存储在内存里。 寄存器GDTR存储着全局描述符表的基址，长48bits：  </p>
+<p>1. 低16位是GDT的大小  </p>
+<p>2. 高32位是GDT在内存中的位置  </p>
+<p>&emsp; 全局描述符表GDT（Global Descriptor Table）在整个系统中，全局描述符表GDT只有一张(一个处理器对应一个GDT)，GDT可以被放在内存的任何位置，但CPU必须知道GDT的入口，也就是基地址放在哪里，Intel的设计者门提供了一个寄存器GDTR用来存放GDT的入口地址，程序员将GDT设定在内存中某个位置之后，可以通过LGDT指令将GDT的入口地址装入此寄存器，从此以后，CPU就根据此寄存器中的内容作为GDT的入口来访问GDT了。GDTR中存放的是GDT在内存中的基地址和其表长界限。</p>
+<p>指令：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lgdt src</span><br></pre></td></tr></table></figure>
+
+<h4 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h4><h5 id="段选择子"><a href="#段选择子" class="headerlink" title="段选择子"></a>段选择子</h5><p>1. Index: 13 bits, 相应段描述符在GDT中的基址（相当于偏移量）  </p>
+<p>2. Table Indicator, TI-bit: 1 bit, 选择GDT和LDT(局部描述符表，主要存放各个任务的私有描述符，如本任务的代码段描述符和数据段描述符等)  </p>
+<p>3. Request privilege level, RPL-bits: 2 bits</p>
+<p>&emsp; （这次我们只实现一个简单的GDT,一共有三部分：dummy，CD(code descriptor)，VD(vedio descriptor)）  </p>
+<p>&emsp; “ 段:偏移” 形式的逻辑地址（Logical Address）经过段机制转化成“ 线性地址” （ Linear Address），而不是“ 物理地址” （ Physical Address）。 在上面的程序中， 线性地址就是物理地址。 另外， 包含描述符的， 不仅可以是GDT， 也可以是LDT。</p>
+<h3 id="代码-1"><a href="#代码-1" class="headerlink" title="代码"></a>代码</h3><p>&emsp;我们只需要在上一次的基础上更改，并注意进入保护模式的输出方式与原来的有所不同。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">reset_floppy:</span><br><span class="line">	xorw	%ax, %ax				    # int 13h reset floppy</span><br><span class="line">	xorb	%dl, %dl</span><br><span class="line">	int     $0x13</span><br><span class="line">	ret</span><br></pre></td></tr></table></figure>
+
+<p>！请自行查阅int 13h相关资料</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"># GDT</span><br><span class="line">	.p2align 4</span><br><span class="line">gdt:</span><br><span class="line">	.word	0,0,0,0</span><br><span class="line">	</span><br><span class="line">	# CS</span><br><span class="line">	.word	0xffff, 0</span><br><span class="line">	.byte	0, 0x9a, 0xcf, 0</span><br><span class="line"></span><br><span class="line">     # DS</span><br><span class="line">	.word	0xffff, 0</span><br><span class="line">	.byte	0, 0x92, 0xcf, 0</span><br><span class="line">	# DUMMY</span><br><span class="line">	.word	0,0,0,0</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">load_gdt:</span><br><span class="line">	lgdt	gdtptr						</span><br><span class="line"></span><br><span class="line">										# turn on protect-mode</span><br><span class="line">	movw	$1, %ax</span><br><span class="line">	lmsw	%ax      </span><br><span class="line"></span><br><span class="line">	jmp	flush_instr						# reflesh cache</span><br><span class="line">flush_instr:</span><br><span class="line">	movl	$ProtectMode_DS, %eax		# reinitialize registers</span><br><span class="line">	movw	%ax, %ds</span><br><span class="line">	movw	%ax, %es</span><br><span class="line">	movw	%ax, %fs</span><br><span class="line">	movw	%ax, %gs</span><br><span class="line"></span><br><span class="line">	movw	%ax, %ss</span><br><span class="line">	movl	$0x4000, %ebp</span><br><span class="line">	movl	$0x4000, %esp</span><br><span class="line"></span><br><span class="line">										# set code segment</span><br><span class="line">	ljmp	$ProtectMode_CS, $start32</span><br></pre></td></tr></table></figure>
+
+<h2 id="进程调度"><a href="#进程调度" class="headerlink" title="进程调度"></a>进程调度</h2><h3 id="名词解释-1"><a href="#名词解释-1" class="headerlink" title="名词解释"></a>名词解释</h3><h4 id="os与扇区加载"><a href="#os与扇区加载" class="headerlink" title="os与扇区加载"></a>os与扇区加载</h4><p>&emsp; 在进入保护模式前，先加载OS。  </p>
+<p>&emsp; 从第二个扇区开始读若干个扇区。 加载七个扇区。 </p>
+<p>&emsp; MBR 中的主引导加载程序是一个 512 字节大小的映像，其中包含程序代码和一个小分区表。前 446 个字节是主引导加载程序，其中包含可执行代码和错误消息文本。接下来的 64 个字节是分区表，其中包含 4 个分区的记录（每个记录的大小是 16 个字节）。MBR 以两个特殊数字的字节（0xAA55）结束。这个数字会用来进行 MBR 的有效性检查。  </p>
+<p>&emsp; 主引导加载程序的工作是查找并加载次引导加载程序（第二阶段）。它是通过在分区表中查找一个活动分区来实现这种功能的。当找到一个活动分区时，它会扫描分区表中的其他分区，以确保它们都不是活动的。当这个过程验证完成之后，就将活动分区的引导记录从这个设备中读入 RAM 中并执行它。  </p>
+<h4 id="FAT12"><a href="#FAT12" class="headerlink" title="FAT12"></a>FAT12</h4><p>&emsp; FAT12 是DOS时代就开始使用的文件系统（File System），直到现在仍然在软盘上使用。 几乎所有的文件系统都会把磁盘划分为若干层次以方便组织和管理， 这些层次包括：</p>
+<ol>
+<li>扇区（Sector）：磁盘上的最小数据单元。</li>
+<li>簇（Cluster）：一个或多个扇区。</li>
+<li>分区（Partition）：通常指整个文件系统。</li>
+</ol>
+<p>&emsp; 我们已经接触过引导扇区，就让我们从这里开始。引导扇区是整个软盘的第0个扇区，在这个扇区中有一个很重要的数据结构叫做BPB（BIOS ParameterBlock），紧接着引导扇区的是两个完全相同的FAT表， 每个占用9个扇区。 第二个FAT之后是根目录区的第一个扇区。 根目录区的后面是数据区。根目录区位于第二个FAT表之后， 开始的扇区号为19， 它由若干个目录条目（ Directory Entry） 组成， 条目最多有BPB_RootEntCnt个。 由于根目录区的大小是依赖于BPB_RootEntCnt的， 所以长度不固定。</p>
+<h4 id="从汇编进入C"><a href="#从汇编进入C" class="headerlink" title="从汇编进入C"></a>从汇编进入C</h4><p>&emsp; 需要为c的执行设立栈：位置一般在0x4000,BSS段里是未初始化的数据，清零的好处有很多，它使得代码的运行结果可以复现（如果未初始化的值每次都不一样，每次跑的结果也不一样）。</p>
+<p>&emsp;使用C语言编写写VGA缓存和汇编写VGA缓存的本质都是一样的，是向x8b000这个位置写入信息(ascii码、颜色等)，不同的是c语言中直接使用的就是0x8b000这个地址，而汇编中用的是段偏移的方法。  </p>
+<h3 id="代码-2"><a href="#代码-2" class="headerlink" title="代码"></a>代码</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">call	myMain			# .global myMain</span><br></pre></td></tr></table></figure>
+
+<p>！Attention:</p>
+<p>&emsp; “ 一致” :  当转移的目标是一个特权级更高的一致代码段， 当前的特权级会被延续下去， 而向特权级更高的非一致代码段的转移会引起常规保护错误（ general-protection exception， #GP），除非使用调用门或者任务门。 如果系统代码不访问受保护的资源和某些类型的异常处理（比如，除法错误或溢出错误），它可以被放在一致代码段中。 为避免低特权级的程序访问而被保护起来的系统代码则应放到非一致代码段中。</p>
+<p>&emsp;如果目标代码的特权级低的话，无论它是不是一致代码段， 都不能通过call或者jump转移进去，尝试这样的转移将会导致常规保护错误。</p>
+<p>&emsp;所有的数据段都是非一致的， 这意味着不可能被低特权级的代码访问到。与代码段不同的是，数据段可以被更高特权级的代码访问到， 而不需要使用特定的门。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">stack_init</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">long</span>** stk,<span class="keyword">void</span> (*task)(<span class="keyword">void</span>))</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  *(*stk)-- = (<span class="keyword">unsigned</span> <span class="keyword">long</span>) <span class="number">0x08</span>;        <span class="comment">// CS 高地址</span></span><br><span class="line">  *(*stk)-- = (<span class="keyword">unsigned</span> <span class="keyword">long</span>) task;        <span class="comment">// eip</span></span><br><span class="line">  *(*stk)-- = (<span class="keyword">unsigned</span> <span class="keyword">long</span>) <span class="number">0xAAAAAAAA</span>;  <span class="comment">// EAX </span></span><br><span class="line">  *(*stk)-- = (<span class="keyword">unsigned</span> <span class="keyword">long</span>) <span class="number">0xCCCCCCCC</span>;  <span class="comment">// ECX</span></span><br><span class="line">  *(*stk)-- = (<span class="keyword">unsigned</span> <span class="keyword">long</span>) <span class="number">0xDDDDDDDD</span>;  <span class="comment">// EDX </span></span><br><span class="line">  *(*stk)-- = (<span class="keyword">unsigned</span> <span class="keyword">long</span>) <span class="number">0xBBBBBBBB</span>;  <span class="comment">// EBX</span></span><br><span class="line">  *(*stk)-- = (<span class="keyword">unsigned</span> <span class="keyword">long</span>) <span class="number">0x44444444</span>;  <span class="comment">// ESP</span></span><br><span class="line">  *(*stk)-- = (<span class="keyword">unsigned</span> <span class="keyword">long</span>) <span class="number">0x55555555</span>;  <span class="comment">// EBP</span></span><br><span class="line">  *(*stk)-- = (<span class="keyword">unsigned</span> <span class="keyword">long</span>) <span class="number">0x66666666</span>;  <span class="comment">// ESI</span></span><br><span class="line">  *(*stk) = (<span class="keyword">unsigned</span> <span class="keyword">long</span>) <span class="number">0x77777777</span>;    <span class="comment">// EDI 低地址    </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">CTX_SW: </span><br><span class="line">	pusha </span><br><span class="line">	movl %esp, prevSP </span><br><span class="line">	movl nextSP, %esp </span><br><span class="line">	popa </span><br><span class="line">	ret </span><br></pre></td></tr></table></figure>
+
+<p>！请自行查阅上下文切换相关内容</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">myTCB</span> &#123;</span></span><br><span class="line">	<span class="comment">//unsigned long state; //PUT IN STACK[0]  </span></span><br><span class="line">	<span class="comment">//int tcbIndex;		//PUT IN STACK[1]</span></span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">myTCB</span> * <span class="title">next</span>;</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>* stkTop;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>* <span class="built_in">stack</span>;  </span><br><span class="line">&#125;myTCB,*TNode;</span><br></pre></td></tr></table></figure>
+
+<p>一个简单的调度只需要完成从等待队列中装载进程和上下文切换即可。</p>
+<h2 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h2><p>！进入C后的工作比写汇编时简单很多，我就简单地给出需要实现的模块：</p>
+<p> <img src="http://drive.google.com/uc?export=view&id=0B_0Ovo-1o-jAUk9zLUlaSGNSajg" alt="img"> </p>
+<p><img src="http://drive.google.com/uc?export=view&id=0B_0Ovo-1o-jAcVo2dFAyUk94RUk" alt="img"></p>
+<h2 id="时间片轮转"><a href="#时间片轮转" class="headerlink" title="时间片轮转"></a>时间片轮转</h2><h3 id="名词解释-amp-代码"><a href="#名词解释-amp-代码" class="headerlink" title="名词解释&amp;代码"></a>名词解释&amp;代码</h3><h4 id="中断初始化8259A"><a href="#中断初始化8259A" class="headerlink" title="中断初始化8259A"></a>中断初始化8259A</h4><p>&emsp;在CPU中有两个用来控制中断的控制器：可编程中断控制器8259A。  </p>
+<p>&emsp;可屏蔽中断与CPU的关系是通过对可编程中断控制器8259A建立起来的。它根据优先级在同时发生中断的设备中选择应该处理的请求， 而且可以通过对其寄存器的设置来屏蔽或打开相应的中断。  </p>
+<p>&emsp;两片级联的8259A与CPU相连。 在BIOS初始化它的时候， IRQ0～IRQ7被设置为对应向量号08h～0Fh， 而通过表3.8我们知道，在保护模式下向量号08h-0Fh已经被占用了，所以我们不得不重新设置主从8259A。  </p>
+<p>&emsp;8259A是可编程中断控制器， 对它的设置并不复杂， 是通过向相应的端口写入特定的ICW（Initialization Command Word） 来实现的。 主8259A对应的端口地址是20h和21h， 从8259A对应的端口地址是A0h和A1h。 ICW共有4个， 每一个都是具有特定格式的字节。   </p>
+<p>&emsp;ICW的格式初始化过程：  </p>
+<ol>
+<li>往端口20h（ 主片） 或A0h（ 从片） 写入ICW1。  </li>
+</ol>
+<ol start="2">
+<li>往端口21h（ 主片） 或A1h（ 从片） 写入ICW2。  </li>
+</ol>
+<ol start="3">
+<li>往端口21h（ 主片） 或A1h（ 从片） 写入ICW3。  </li>
+</ol>
+<ol start="4">
+<li>往端口21h（ 主片） 或A1h（ 从片） 写入ICW4。  </li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">Init8259A:  </span><br><span class="line"></span><br><span class="line">    mov    $0x11, %al</span><br><span class="line">    out    %al, $0x20    ; 主8259, ICW1.</span><br><span class="line"></span><br><span class="line">    out     %al, $0xA0   ; 从8259, ICW1.</span><br><span class="line">    mov    &amp;0x20, %al    ; IRQ0 对应中断向量 0x20</span><br><span class="line"></span><br><span class="line">    out    %al,$0x21     ; 主8259, ICW2.</span><br><span class="line">    mov    $0x28, %al    ; IRQ8 对应中断向量 0x28</span><br><span class="line"></span><br><span class="line">    out    %al,$0xA1    ; 从8259, ICW2.</span><br><span class="line">    mov    $0x04h, %al   ; IR2 对应从8259</span><br><span class="line"></span><br><span class="line">    out    %al, $0x21    ; 主8259, ICW3.</span><br><span class="line">    mov    $0x02, %al    ; 对应主8259的 IR2</span><br><span class="line"></span><br><span class="line">    out    %al,$0xA1h    ; 从8259, ICW3.</span><br><span class="line">    mov    $0x01, %al</span><br><span class="line"></span><br><span class="line">    out    %al,$0x21        ; 主8259, ICW4.</span><br><span class="line">    out     %al,$0xA1   ; 从8259, ICW4.</span><br><span class="line"></span><br><span class="line">    mov    $0xff,%al    ; 仅仅开启定时器中断</span><br><span class="line">    out    %al,$0x21    ; 主8259, OCW1.</span><br><span class="line"></span><br><span class="line">    mov    $0xff,%al    ; 屏蔽从8259所有中断</span><br><span class="line">    out    %al,$0A1h    ; 从8259, OCW1.</span><br><span class="line"></span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+
+<h4 id="时钟初始化"><a href="#时钟初始化" class="headerlink" title="时钟初始化"></a>时钟初始化</h4><p>&emsp; 8253 芯片接收主板上一个石英震荡器产生的频率，石英震荡器每秒震荡1193180次，所以8253 芯片的主频就是1.193180Mhz。我们又知道计数器从65536递减到0就会产生一个方波，所以OUT0 引脚会每秒产生1.193180Mhz/65536 = 18.2 次的方波信号。我们用晶振信号作为时钟信号。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">init8253</span><br><span class="line"></span><br><span class="line">    mov $0x34,%al</span><br><span class="line"></span><br><span class="line">    out %al,$0x43</span><br><span class="line"></span><br><span class="line">    mov $(11932 &amp; 0xff), %al</span><br><span class="line"></span><br><span class="line">    out %al,$0x40</span><br><span class="line"></span><br><span class="line">    mov $(11932&gt;&gt;8),%al</span><br><span class="line"></span><br><span class="line">    out %al,$0x40</span><br><span class="line"></span><br><span class="line">    in $0x21,%al</span><br><span class="line"></span><br><span class="line">    andb $0xFE,%al</span><br><span class="line"></span><br><span class="line">    out %al,$0x21</span><br><span class="line"></span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+
+<h4 id="开关中断"><a href="#开关中断" class="headerlink" title="开关中断"></a>开关中断</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">enable_interrupt:</span><br><span class="line">    sti        //开中断</span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">disable_interrupt:</span><br><span class="line">    cli        //关中断</span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+
+<h4 id="接口"><a href="#接口" class="headerlink" title="接口"></a>接口</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//=======interrupt &amp; timer manager============  </span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init8259A</span><span class="params">()</span></span>;      <span class="comment">//中断</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init8253</span><span class="params">()</span></span>;    <span class="comment">//时钟  </span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">enable_interrupt</span><span class="params">()</span></span>;      <span class="comment">//开中断</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">disable_interrupt</span><span class="params">()</span></span>;      <span class="comment">//关中断</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">tick</span><span class="params">()</span></span>;  </span><br><span class="line"><span class="keyword">volatile</span> <span class="keyword">int</span> tick_number;</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://drive.google.com/uc?export=view&id=0B_0Ovo-1o-jAUk9zLUlaSGNSajg" alt="img"></p>
+<p>也许之后我会写上文件系统部分</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/eltsai/E-Tsai.github.io/tags/CN/" rel="tag"># CN</a>
+              <a href="/eltsai/E-Tsai.github.io/tags/systems/" rel="tag"># systems</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/eltsai/E-Tsai.github.io/website-archives/" rel="prev" title="Website Archive (updating)">
+      <i class="fa fa-chevron-left"></i> Website Archive (updating)
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/eltsai/E-Tsai.github.io/lambda-calculus/" rel="next" title="λ演算">
+      λ演算 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E8%A8%80-amp-%E5%B7%A5%E5%85%B7"><span class="nav-number">1.</span> <span class="nav-text">前言&amp;工具</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E5%AF%BC%E6%89%87%E5%8C%BA"><span class="nav-number">2.</span> <span class="nav-text">引导扇区</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%8D%E6%B1%87%E8%A7%A3%E9%87%8A"><span class="nav-number">2.1.</span> <span class="nav-text">词汇解释</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#BIOS"><span class="nav-number">2.1.1.</span> <span class="nav-text">BIOS</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E5%8D%8F%E8%AE%AE"><span class="nav-number">2.1.2.</span> <span class="nav-text">启动协议</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#zImage%EF%BC%9A"><span class="nav-number">2.1.2.1.</span> <span class="nav-text">zImage：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#bzImage"><span class="nav-number">2.1.2.2.</span> <span class="nav-text">bzImage</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%AD%E6%96%AD"><span class="nav-number">2.1.3.</span> <span class="nav-text">中断</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9E%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.1.4.</span> <span class="nav-text">实模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%93%BE%E6%8E%A5%E8%84%9A%E6%9C%AC"><span class="nav-number">2.1.5.</span> <span class="nav-text">链接脚本</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%84%E5%AD%98%E5%99%A8"><span class="nav-number">2.1.6.</span> <span class="nav-text">寄存器</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81"><span class="nav-number">2.2.</span> <span class="nav-text">代码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%AF%E5%8A%A8%E6%89%87%E5%8C%BA"><span class="nav-number">2.2.1.</span> <span class="nav-text">启动扇区</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%93%BE%E6%8E%A5%E8%84%9A%E6%9C%AC-1"><span class="nav-number">2.2.2.</span> <span class="nav-text">链接脚本</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%B9%B6%E6%89%A7%E8%A1%8C"><span class="nav-number">2.2.3.</span> <span class="nav-text">编译并执行</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">保护模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A"><span class="nav-number">3.1.</span> <span class="nav-text">名词解释</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#BIOS%E4%B8%AD%E6%96%AD"><span class="nav-number">3.1.1.</span> <span class="nav-text">BIOS中断</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9E%E6%A8%A1%E5%BC%8F%E4%B8%8E%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.1.2.</span> <span class="nav-text">实模式与保护模式</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%AE%9E%E6%A8%A1%E5%BC%8F%EF%BC%8820%E4%BD%8D%EF%BC%89%EF%BC%9A"><span class="nav-number">3.1.2.1.</span> <span class="nav-text">实模式（20位）：</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%EF%BC%8832%E4%BD%8D%EF%BC%89"><span class="nav-number">3.1.2.2.</span> <span class="nav-text">保护模式（32位）</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%BB%BC%E8%BF%B0"><span class="nav-number">3.1.2.3.</span> <span class="nav-text">综述</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%BD%AC%E5%8F%98%E8%BF%87%E7%A8%8B"><span class="nav-number">3.1.2.4.</span> <span class="nav-text">转变过程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GDT%E8%A1%A8"><span class="nav-number">3.2.</span> <span class="nav-text">GDT表</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">3.2.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.2.2.</span> <span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%AE%B5%E9%80%89%E6%8B%A9%E5%AD%90"><span class="nav-number">3.2.2.1.</span> <span class="nav-text">段选择子</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81-1"><span class="nav-number">3.3.</span> <span class="nav-text">代码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E8%B0%83%E5%BA%A6"><span class="nav-number">4.</span> <span class="nav-text">进程调度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A-1"><span class="nav-number">4.1.</span> <span class="nav-text">名词解释</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#os%E4%B8%8E%E6%89%87%E5%8C%BA%E5%8A%A0%E8%BD%BD"><span class="nav-number">4.1.1.</span> <span class="nav-text">os与扇区加载</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#FAT12"><span class="nav-number">4.1.2.</span> <span class="nav-text">FAT12</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8E%E6%B1%87%E7%BC%96%E8%BF%9B%E5%85%A5C"><span class="nav-number">4.1.3.</span> <span class="nav-text">从汇编进入C</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81-2"><span class="nav-number">4.2.</span> <span class="nav-text">代码</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="nav-number">5.</span> <span class="nav-text">内存管理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E7%89%87%E8%BD%AE%E8%BD%AC"><span class="nav-number">6.</span> <span class="nav-text">时间片轮转</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8D%E8%AF%8D%E8%A7%A3%E9%87%8A-amp-%E4%BB%A3%E7%A0%81"><span class="nav-number">6.1.</span> <span class="nav-text">名词解释&amp;代码</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%AD%E6%96%AD%E5%88%9D%E5%A7%8B%E5%8C%968259A"><span class="nav-number">6.1.1.</span> <span class="nav-text">中断初始化8259A</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%B6%E9%92%9F%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">6.1.2.</span> <span class="nav-text">时钟初始化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BC%80%E5%85%B3%E4%B8%AD%E6%96%AD"><span class="nav-number">6.1.3.</span> <span class="nav-text">开关中断</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8E%A5%E5%8F%A3"><span class="nav-number">6.1.4.</span> <span class="nav-text">接口</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Elisa Tsai</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/eltsai/E-Tsai.github.io/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/eltsai/E-Tsai.github.io/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/eltsai/E-Tsai.github.io/tags/">
+        <span class="site-state-item-count">12</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/eltsai" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;eltsai"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://t.me/dumblelisapapernotes" title="Telegram → https:&#x2F;&#x2F;t.me&#x2F;dumblelisapapernotes" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Telegram</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://scholar.google.com/citations?user=3NA-OTQAAAAJ" title="Scholar → https:&#x2F;&#x2F;scholar.google.com&#x2F;citations?user&#x3D;3NA-OTQAAAAJ" rel="noopener" target="_blank"><i class="fab fa-google fa-fw"></i>Scholar</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.instagram.com/elisatdraws/" title="Instagram → https:&#x2F;&#x2F;www.instagram.com&#x2F;elisatdraws&#x2F;" rel="noopener" target="_blank"><i class="fab fa-instagram fa-fw"></i>Instagram</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Elisa Tsai</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/eltsai/E-Tsai.github.io/lib/anime.min.js"></script>
+  <script src="/eltsai/E-Tsai.github.io/lib/velocity/velocity.min.js"></script>
+  <script src="/eltsai/E-Tsai.github.io/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/eltsai/E-Tsai.github.io/js/utils.js"></script>
+
+<script src="/eltsai/E-Tsai.github.io/js/motion.js"></script>
+
+
+<script src="/eltsai/E-Tsai.github.io/js/schemes/pisces.js"></script>
+
+
+<script src="/eltsai/E-Tsai.github.io/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
