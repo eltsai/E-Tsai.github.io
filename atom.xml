@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>Hexo</title>
+  <title>Mostly Harmless</title>
   <icon>https://eltsai.github.io/icon.png</icon>
-  
+  <subtitle>Thanks for all the fish</subtitle>
   <link href="https://eltsai.github.io/atom.xml" rel="self"/>
   
   <link href="https://eltsai.github.io/"/>
